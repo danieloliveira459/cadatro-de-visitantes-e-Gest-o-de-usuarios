@@ -141,7 +141,7 @@ export default function Pastor() {
                 Visitantes Cadastrados
               </h2>
 
-              {/* 🔥 BOTÃO PDF SEMPRE VISÍVEL */}
+              {/*  BOTÃO PDF SEMPRE VISÍVEL */}
               <button onClick={gerarPDF} className="btn-pdf">
                 <FaFilePdf /> Gerar PDF
               </button>
