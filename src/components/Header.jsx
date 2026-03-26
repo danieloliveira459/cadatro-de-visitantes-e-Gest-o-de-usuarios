@@ -10,7 +10,7 @@ export default function Header() {
   const isPastor = location.pathname === "/pastor";
   const isNaoEvangelico = location.pathname === "/nao-evangelico";
 
-  // ✅ forma segura
+  // forma segura
   let usuario = null;
 
   try {
