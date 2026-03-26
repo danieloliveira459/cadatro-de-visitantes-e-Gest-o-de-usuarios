@@ -1,10 +1,10 @@
 /* CONTAINER CENTRALIZADO */
 .pastor-container {
-  display: flex; 
+  display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: 30px;
+  padding: 40px;
 }
 
 /* VOLTAR */
@@ -15,7 +15,7 @@
   margin-block-end: 20px;
   cursor: pointer;
   color: #374151;
-  align-self: flex-start; 
+  align-self: flex-start;
 }
 
 /* GRID */
@@ -24,17 +24,16 @@
   grid-template-columns: 1fr 2fr;
   gap: 20px;
   inline-size: 100%;
-  max-inline-size: 1200px; 
 }
 
-/* CARD ( ISOLADO) */
+/* CARD */
 .pastor-container .card {
   background: #fff;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  inline-size: 85%;          
-  max-inline-size: none;      
+  inline-size: 100%;
+  max-inline-size: none;
 }
 
 /* HEADER CARD */
@@ -158,6 +157,7 @@
   cursor: pointer;
 }
 
+/* PDF */
 .btn-pdf {
   background-color: #dc2626;
   color: white;
@@ -174,6 +174,122 @@
 .btn-pdf.disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
-
 }
-/*pdf gerado gerar*/
+
+/* MENU */
+.menu {
+  display: flex;
+  gap: 30px;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 0;
+  margin-bottom: 20px;
+}
+
+.menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: #6b7280;
+  cursor: pointer;
+  padding-bottom: 10px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.menu button:hover {
+  color: #111827;
+}
+
+.menu button.active {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.menu button.active::after {
+  content: "";
+  position: absolute;
+  bottom: -11px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #dc2626;
+  border-radius: 2px;
+}
+
+/* AVISOS */
+.avisos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.total-box {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.total-box span {
+  color: #b91c1c;
+}
+
+.total-box h1 {
+  color: #dc2626;
+  font-size: 28px;
+}
+
+/* INPUTS */
+input,
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/* BOTÕES */
+.btn-red {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.aviso-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.btn-primary {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #374151;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: #1f2937;
+}

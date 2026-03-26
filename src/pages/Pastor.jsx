@@ -1,74 +1,100 @@
 import Header from "../components/Header";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react"; 
-import { FaArrowLeft, FaUsers, FaTrash, FaFilePdf } from "react-icons/fa6";
+import { useEffect, useState } from "react";
+import {
+  FaArrowLeft,
+  FaUsers,
+  FaTrash,
+  FaFilePdf,
+  FaCalendarAlt,
+  FaUserSlash,
+} from "react-icons/fa";
+import { PiUserSwitchLight } from "react-icons/pi";
+import { MdWarning } from "react-icons/md";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable"; // ✅ Import correto
+import autoTable from "jspdf-autotable";
 import "./Pastor.css";
 
 export default function Pastor() {
   const navigate = useNavigate();
-  const [visitantes, setVisitantes] = useState([]);
 
-  // CARREGA OS DADOS
+  const [visitantes, setVisitantes] = useState([]);
+  const [avisos, setAvisos] = useState([]);
+  const [programacoes, setProgramacoes] = useState([]);
+
+  const [titulo, setTitulo] = useState("");
+  const [descricao, setDescricao] = useState("");
+
+  const [dia, setDia] = useState("");
+  const [horario, setHorario] = useState("");
+  const [atividade, setAtividade] = useState("");
+
+  const [aba, setAba] = useState("visitantes");
+
   useEffect(() => {
     try {
-      const dados = JSON.parse(localStorage.getItem("visitantes"));
-      setVisitantes(Array.isArray(dados) ? dados : []);
+      setVisitantes(JSON.parse(localStorage.getItem("visitantes")) || []);
+      setAvisos(JSON.parse(localStorage.getItem("avisos")) || []);
+      setProgramacoes(JSON.parse(localStorage.getItem("programacoes")) || []);
     } catch {
       setVisitantes([]);
+      setAvisos([]);
+      setProgramacoes([]);
     }
   }, []);
 
-  // EXCLUIR VISITANTE
   const handleDelete = (index) => {
-    const novaLista = visitantes.filter((_, i) => i !== index);
-    setVisitantes(novaLista);
-    localStorage.setItem("visitantes", JSON.stringify(novaLista));
+    const nova = visitantes.filter((_, i) => i !== index);
+    setVisitantes(nova);
+    localStorage.setItem("visitantes", JSON.stringify(nova));
   };
 
-  // GERAR PDF
-  const gerarPDF = () => {
-    if (visitantes.length === 0) {
-      alert("Nenhum visitante cadastrado!");
-      return;
-    }
+  const adicionarAviso = () => {
+    if (!titulo || !descricao) return alert("Preencha os campos!");
 
+    const novo = {
+      titulo,
+      descricao,
+      data: new Date().toLocaleDateString(),
+    };
+
+    const lista = [...avisos, novo];
+    setAvisos(lista);
+    localStorage.setItem("avisos", JSON.stringify(lista));
+
+    setTitulo("");
+    setDescricao("");
+  };
+
+  const adicionarProgramacao = () => {
+    if (!dia || !horario || !atividade)
+      return alert("Preencha todos os campos!");
+
+    const nova = { dia, horario, atividade };
+    const lista = [...programacoes, nova];
+
+    setProgramacoes(lista);
+    localStorage.setItem("programacoes", JSON.stringify(lista));
+
+    setDia("");
+    setHorario("");
+    setAtividade("");
+  };
+
+  const gerarPDF = () => {
     const doc = new jsPDF();
 
-    // TÍTULO
-    doc.setTextColor(220, 38, 38);
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text("Visitantes Cadastrados", doc.internal.pageSize.getWidth() / 2, 15, {
-      align: "center",
-    });
+    doc.text("Visitantes Cadastrados", 105, 15, { align: "center" });
 
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0, 0, 0);
-
-    const tabela = visitantes.map((v) => [
-      v.nome,
-      v.cargo,
-      v.telefone,
-      v.igreja,
-      v.data,
-    ]);
-
-    // ✅ Usa autoTable corretamente
     autoTable(doc, {
       head: [["Nome", "Cargo", "Telefone", "Igreja", "Data"]],
-      body: tabela,
-      startY: 20,
-      headStyles: {
-        fillColor: [220, 38, 38],
-        textColor: [255, 255, 255],
-        halign: "center",
-        fontStyle: "bold",
-      },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245],
-      },
+      body: visitantes.map((v) => [
+        v.nome,
+        v.cargo,
+        v.telefone,
+        v.igreja,
+        v.data,
+      ]),
     });
 
     doc.save("visitantes.pdf");
@@ -79,105 +105,131 @@ export default function Pastor() {
       <Header />
 
       <div className="pastor-container">
-        {/* VOLTAR */}
         <div className="back" onClick={() => navigate("/")}>
-          <FaArrowLeft />
-          Voltar para Cadastro
+          <FaArrowLeft /> Voltar
         </div>
 
-        <div className="painel">
-          {/* ESQUERDA */}
+        {/* MENU */}
+        <div className="menu">
+          <button onClick={() => setAba("visitantes")}>
+            <FaUsers /> Visitantes
+          </button>
+
+          <button onClick={() => setAba("avisos")}>
+            <MdWarning /> Avisos
+          </button>
+
+          <button onClick={() => setAba("programacao")}>
+            <FaCalendarAlt /> Programação
+          </button>
+        </div>
+
+        {/* VISITANTES */}
+        {aba === "visitantes" && (
           <div className="card">
-            <h2 className="card-title">
-              <FaUsers className="icon" />
-              Estatísticas
+            <h2>
+              <FaUsers /> Visitantes
             </h2>
 
-            <div className="stats-box">
-              <span>Total de Visitantes</span>
-              <h1>{visitantes.length}</h1>
-            </div>
+            <button onClick={gerarPDF}>
+              <FaFilePdf /> PDF
+            </button>
 
-            <div className="ultimos">
-              <strong>Últimos Cadastros</strong>
-              {visitantes.length === 0 ? (
-                <p>Nenhum visitante ainda</p>
-              ) : (
-                visitantes
-                  .slice(-3)
-                  .reverse()
-                  .map((v, i) => (
-                    <div key={i} className="ultimo-item">
-                      <span>{v.nome}</span>
-                      <span>{v.igreja}</span>
-                      <small>{v.data}</small>
-                    </div>
-                  ))
-              )}
-            </div>
-          </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Cargo</th>
+                  <th>Telefone</th>
+                  <th>Igreja</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
 
-          {/* DIREITA */}
-          <div className="card">
-            <div 
-              className="card-header"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
-              <h2 className="card-title">
-                <FaUsers className="icon" />
-                Visitantes Cadastrados
-              </h2>
-
-              {/* BOTÃO PDF */}
-              <button onClick={gerarPDF} className="btn-pdf">
-                <FaFilePdf /> Gerar PDF
-              </button>
-            </div>
-
-            <span>Total: {visitantes.length}</span>
-
-            {visitantes.length === 0 ? (
-              <div className="empty">
-                <FaUsers size={40} color="#9ca3af" />
-                <p>Nenhum visitante cadastrado ainda.</p>
-              </div>
-            ) : (
-              <table className="tabela">
-                <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Cargo</th>
-                    <th>Telefone</th>
-                    <th>Igreja</th>
-                    <th>Data</th>
-                    <th>Ações</th>
+              <tbody>
+                {visitantes.map((v, i) => (
+                  <tr key={i}>
+                    <td>{v.nome}</td>
+                    <td>{v.cargo}</td>
+                    <td>{v.telefone}</td>
+                    <td>{v.igreja}</td>
+                    <td>{v.data}</td>
+                    <td>
+                      <FaTrash onClick={() => handleDelete(i)} />
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {visitantes.map((v, i) => (
-                    <tr key={i}>
-                      <td>{v.nome}</td>
-                      <td>{v.cargo}</td>
-                      <td>{v.telefone}</td>
-                      <td>{v.igreja}</td>
-                      <td>{v.data}</td>
-                      <td>
-                        <FaTrash
-                          className="delete"
-                          onClick={() => handleDelete(i)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+        )}
+
+        {/* AVISOS */}
+        {aba === "avisos" && (
+          <div className="card">
+            <h2>
+              <MdWarning /> Avisos
+            </h2>
+
+            <input
+              placeholder="Título"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+            />
+            <textarea
+              placeholder="Descrição"
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+            />
+
+            <button onClick={adicionarAviso}>Adicionar</button>
+
+            <ul>
+              {avisos.map((a, i) => (
+                <li key={i}>
+                  {a.titulo} - {a.data}
+                  <FaTrash
+                    onClick={() => {
+                      const nova = avisos.filter((_, index) => index !== i);
+                      setAvisos(nova);
+                      localStorage.setItem("avisos", JSON.stringify(nova));
+                    }}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* PROGRAMAÇÃO */}
+        {aba === "programacao" && (
+          <div className="card">
+            <h2>
+              <FaCalendarAlt /> Programação
+            </h2>
+
+            <select value={dia} onChange={(e) => setDia(e.target.value)}>
+              <option value="">Dia</option>
+              <option>Domingo</option>
+              <option>Segunda</option>
+            </select>
+
+            <input
+              type="time"
+              value={horario}
+              onChange={(e) => setHorario(e.target.value)}
+            />
+
+            <input
+              placeholder="Evento"
+              value={atividade}
+              onChange={(e) => setAtividade(e.target.value)}
+            />
+
+            <button onClick={adicionarProgramacao}>Adicionar</button>
+          </div>
+        )}
       </div>
     </>
   );
