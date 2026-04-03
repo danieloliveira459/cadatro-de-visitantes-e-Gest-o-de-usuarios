@@ -3,6 +3,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 
+// Rotas
 import visitanteRoutes from "./routes/visitanteRoutes.js";
 import aceitaramJesusRoutes from "./routes/aceitaramJesusRoutes.js";
 import avisoRoutes from "./routes/avisoRoutes.js";
@@ -11,11 +12,17 @@ import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
 
-// Corrigir __dirname no ESModules
+//////////////////////////////////////////////////////
+// CONFIG __dirname (ESMODULES)
+//////////////////////////////////////////////////////
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middlewares
+//////////////////////////////////////////////////////
+// MIDDLEWARES
+//////////////////////////////////////////////////////
+
 app.use(cors());
 app.use(express.json());
 
@@ -30,7 +37,7 @@ app.use("/api/programacoes", programacaoRoutes);
 app.use("/api/auth", authRoutes);
 
 //////////////////////////////////////////////////////
-// ROTA TESTE
+// ROTA DE TESTE
 //////////////////////////////////////////////////////
 
 app.get("/", (req, res) => {
@@ -38,20 +45,25 @@ app.get("/", (req, res) => {
 });
 
 //////////////////////////////////////////////////////
-// SERVIR FRONTEND (React build)
+// FRONTEND (REACT BUILD)
 //////////////////////////////////////////////////////
 
 const frontendPath = path.join(__dirname, "../frontend/dist");
 
 app.use(express.static(frontendPath));
 
-// 🔥 CORREÇÃO DO ERRO AQUI (sem usar "*")
-app.use((req, res) => {
+//////////////////////////////////////////////////////
+// FALLBACK REACT ROUTER (PRODUÇÃO SEGURA)
+//////////////////////////////////////////////////////
+
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 //////////////////////////////////////////////////////
-// PORTA (IMPORTANTE PARA RENDER)
+// PORTA (RENDER)
 //////////////////////////////////////////////////////
 
 const PORT = process.env.PORT || 3000;
