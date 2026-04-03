@@ -1,10 +1,10 @@
 import mysql from "mysql2/promise";
+import dotenv from "dotenv";
 
-export const db = await mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "igreja_sistema"
-});
+dotenv.config();
 
-console.log("MySQL conectado com sucesso!");
+console.log("MYSQL_URL:", process.env.MYSQL_URL);
+
+export const db = await mysql.createConnection(process.env.MYSQL_URL);
+
+console.log("MySQL conectado!");
