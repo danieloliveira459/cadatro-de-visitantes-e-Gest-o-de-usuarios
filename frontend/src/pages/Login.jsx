@@ -1,11 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { GiChurch } from "react-icons/gi";
 import { useNavigate } from "react-router-dom";
 import { TbUserShare } from "react-icons/tb";
 import "./Login.css";
 
-// API CORRIGIDA
 const API = `${import.meta.env.VITE_API_URL}/api/auth`;
 
 export default function Login() {
@@ -23,45 +21,63 @@ export default function Login() {
   const [nivel, setNivel] = useState("USER");
 
   const [nivelUsuario, setNivelUsuario] = useState("");
+  const [loadingNivel, setLoadingNivel] = useState(false);
 
-  //  BUSCAR NÍVEL
-  const buscarNivel = async (emailDigitado) => {
-    if (!emailDigitado) {
+  //////////////////////////////////////////////////////
+  // BUSCAR NÍVEL COM DELAY (DEBOUNCE)
+  //////////////////////////////////////////////////////
+  useEffect(() => {
+    if (!email) {
       setNivelUsuario("");
       return;
     }
 
-    try {
-      const res = await fetch(`${API}/nivel`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: emailDigitado }),
-      });
+    const delay = setTimeout(async () => {
+      setLoadingNivel(true);
 
-      const data = await res.json();
+      try {
+        const res = await fetch(`${API}/nivel`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
 
-      if (res.ok) {
-        setNivelUsuario(data.nivel);
-      } else {
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          setNivelUsuario("");
+          return;
+        }
+
+        if (res.ok && data.nivel) {
+          setNivelUsuario(data.nivel);
+        } else {
+          setNivelUsuario("");
+        }
+      } catch {
         setNivelUsuario("");
+      } finally {
+        setLoadingNivel(false);
       }
-    } catch {
-      setNivelUsuario("");
-    }
-  };
+    }, 500); // 🔥 espera 500ms antes de chamar API
 
-  //  REDIRECIONA SE JÁ ESTIVER LOGADO
+    return () => clearTimeout(delay);
+  }, [email]);
+
+  //////////////////////////////////////////////////////
+  // REDIRECIONA SE JÁ ESTIVER LOGADO
+  //////////////////////////////////////////////////////
   useEffect(() => {
     const token = localStorage.getItem("token");
-
-    if (token) {
-      navigate("/home", { replace: true });
-    }
+    if (token) navigate("/home", { replace: true });
   }, [navigate]);
 
-  //  LOGIN
+  //////////////////////////////////////////////////////
+  // LOGIN
+  //////////////////////////////////////////////////////
   const handleLogin = async (e) => {
     e.preventDefault();
     setErro("");
@@ -76,7 +92,13 @@ export default function Login() {
         body: JSON.stringify({ email, senha }),
       });
 
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        setErro("Erro inesperado do servidor");
+        return;
+      }
 
       if (!res.ok) {
         setErro(data.erro || "Erro no login");
@@ -92,7 +114,9 @@ export default function Login() {
     }
   };
 
-  //  RECUPERAR SENHA
+  //////////////////////////////////////////////////////
+  // RECUPERAR SENHA
+  //////////////////////////////////////////////////////
   const recuperarSenha = async () => {
     setErro("");
     setMensagem("");
@@ -111,7 +135,13 @@ export default function Login() {
         body: JSON.stringify({ email }),
       });
 
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        setErro("Erro no servidor");
+        return;
+      }
 
       if (!res.ok) {
         setErro(data.erro || "Erro ao recuperar senha");
@@ -124,7 +154,24 @@ export default function Login() {
     }
   };
 
-  //  CADASTRO
+  //////////////////////////////////////////////////////
+  // FORMATAR NÍVEL BONITO
+  //////////////////////////////////////////////////////
+  const formatarNivel = (nivel) => {
+    const mapa = {
+      USER: "Usuário",
+      PASTOR: "Pastor",
+      VICE: "Vice",
+      DIRIGENTE: "Dirigente",
+      ADM: "Administrador",
+    };
+
+    return mapa[nivel] || nivel;
+  };
+
+  //////////////////////////////////////////////////////
+  // CADASTRO
+  //////////////////////////////////////////////////////
   const handleCadastrarUsuario = async () => {
     setErro("");
     setMensagem("");
@@ -148,7 +195,13 @@ export default function Login() {
         }),
       });
 
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        setErro("Erro no servidor");
+        return;
+      }
 
       if (!res.ok) {
         setErro(data.erro || "Erro ao cadastrar");
@@ -181,16 +234,17 @@ export default function Login() {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              buscarNivel(e.target.value);
-            }}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
 
-          {nivelUsuario && (
+          {loadingNivel && (
+            <p style={{ fontSize: "12px" }}>Verificando nível...</p>
+          )}
+
+          {nivelUsuario && !loadingNivel && (
             <p style={{ color: "#e02020" }}>
-              <TbUserShare /> <strong>{nivelUsuario}</strong>
+              <TbUserShare /> <strong>{formatarNivel(nivelUsuario)}</strong>
             </p>
           )}
 
