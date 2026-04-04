@@ -5,6 +5,8 @@ import { FaUserPlus } from "react-icons/fa6";
 export default function FormCard() {
   const navigate = useNavigate();
 
+  const API = import.meta.env.VITE_API_URL;
+
   const [nome, setNome] = useState("");
   const [funcao, setFuncao] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -14,8 +16,7 @@ export default function FormCard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // validação simples
-    if (!nome || !funcao || !telefone || !igreja) {
+    if (!nome.trim() || !funcao.trim() || !telefone.trim() || !igreja.trim()) {
       alert("Preencha todos os campos!");
       return;
     }
@@ -23,7 +24,7 @@ export default function FormCard() {
     try {
       setLoading(true);
 
-      const response = await fetch("http://localhost:3000/visitantes", {
+      const response = await fetch(`${API}/api/visitantes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,7 +34,7 @@ export default function FormCard() {
           funcao,
           telefone,
           igreja,
-          data: new Date().toLocaleString(),
+          data: new Date().toISOString(),
         }),
       });
 
@@ -43,13 +44,11 @@ export default function FormCard() {
 
       alert("Visitante cadastrado com sucesso!");
 
-      // limpar campos
       setNome("");
       setFuncao("");
       setTelefone("");
       setIgreja("");
 
-      // redireciona
       navigate("/pastor");
     } catch (error) {
       console.error(error);

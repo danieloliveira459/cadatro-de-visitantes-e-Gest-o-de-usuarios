@@ -5,6 +5,8 @@ import { FaUserSlash } from "react-icons/fa";
 import { PiUserSwitchLight } from "react-icons/pi";
 
 export default function AceitaramJesus() {
+  const API = import.meta.env.VITE_API_URL;
+
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [endereco, setEndereco] = useState("");
@@ -16,12 +18,18 @@ export default function AceitaramJesus() {
   // BUSCAR TOTAL NO BANCO
   const fetchDados = async () => {
     try {
-      const API = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${API}/aceitaramJesus`);
+      const res = await fetch(`${API}/api/aceitaramJesus`);
+
+      if (!res.ok) {
+        throw new Error("Erro ao buscar dados");
+      }
+
       const data = await res.json();
-      setTotal(data.length);
+
+      setTotal(Array.isArray(data) ? data.length : 0);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
+      setTotal(0);
     }
   };
 
@@ -31,7 +39,7 @@ export default function AceitaramJesus() {
 
   // CADASTRAR NO BANCO
   const handleCadastrar = async () => {
-    if (!nome) {
+    if (!nome.trim()) {
       alert("Preencha os campos obrigatórios!");
       return;
     }
@@ -47,7 +55,7 @@ export default function AceitaramJesus() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${API}/aceitaramJesus`, {
+      const res = await fetch(`${API}/api/aceitaramJesus`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,10 +67,8 @@ export default function AceitaramJesus() {
         throw new Error("Erro ao salvar no banco");
       }
 
-      // Atualiza lista/totais após salvar
       await fetchDados();
 
-      // Limpa campos
       setNome("");
       setTelefone("");
       setEndereco("");
