@@ -4,9 +4,9 @@ import { TbUserShare } from "react-icons/tb";
 import "./Login.css";
 
 // ✅ Logo na pasta public
-const logoPath = "../assets/adtag.png";
+const logoPath = "/assets/adtag.png";
 
-// ✅ Garante que a API existe
+// 🔐 API
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 if (!BASE_URL) {
@@ -35,7 +35,7 @@ export default function Login() {
 
   const [checkedAuth, setCheckedAuth] = useState(false);
 
-  // 🔥 Buscar nível do usuário (melhorado)
+  // 🔎 Buscar nível
   useEffect(() => {
     if (!email || email.length < 5) {
       setNivelUsuario("");
@@ -58,7 +58,6 @@ export default function Login() {
         }
 
         const data = await res.json();
-
         setNivelUsuario(data?.nivel || "");
       } catch (err) {
         console.error("Erro ao buscar nível:", err);
@@ -68,11 +67,11 @@ export default function Login() {
       }
     };
 
-    const delay = setTimeout(buscarNivel, 500); // evita flood de requisição
+    const delay = setTimeout(buscarNivel, 500);
     return () => clearTimeout(delay);
   }, [email]);
 
-  // 🔐 Redirecionamento seguro
+  // 🔐 Redirecionamento
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -82,7 +81,7 @@ export default function Login() {
     }
   }, [navigate, location.pathname, checkedAuth]);
 
-  // 🔐 LOGIN
+  // 🔑 LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
     setErro("");
@@ -112,7 +111,7 @@ export default function Login() {
     }
   };
 
-  // 🔑 RECUPERAR SENHA
+  // 🔄 RECUPERAR SENHA
   const recuperarSenha = async () => {
     setErro("");
     setMensagem("");
@@ -155,7 +154,7 @@ export default function Login() {
     return mapa[nivel] || nivel;
   };
 
-  // 🧾 CADASTRO
+  // 👤 CADASTRO
   const handleCadastrarUsuario = async () => {
     setErro("");
     setMensagem("");
@@ -194,9 +193,14 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        {/* ✅ LOGO CORRIGIDA */}
+        {/* ✅ LOGO CORRETA */}
         <h1 className="logo-title">
-          <img src={logoPath} alt="ADTAG Logo" className="logo" />
+          <img
+            src={logoPath}
+            alt="ADTAG Logo"
+            className="logo"
+            onError={(e) => (e.target.style.display = "none")}
+          />
           ADTAG
         </h1>
 
