@@ -3,10 +3,17 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { TbUserShare } from "react-icons/tb";
 import "./Login.css";
 
-// Logo direto da pasta public/assets
+// ✅ Logo na pasta public
 const logoPath = "/assets/adtag.png";
 
-const API = `${import.meta.env.VITE_API_URL}/api/auth`;
+// ✅ Garante que a API existe
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+if (!BASE_URL) {
+  console.error("❌ VITE_API_URL não definida!");
+}
+
+const API = `${BASE_URL}/api/auth`;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -28,15 +35,16 @@ export default function Login() {
 
   const [checkedAuth, setCheckedAuth] = useState(false);
 
-  // 🔥 Buscar nível do usuário
+  // 🔥 Buscar nível do usuário (melhorado)
   useEffect(() => {
-    if (!email) {
+    if (!email || email.length < 5) {
       setNivelUsuario("");
       return;
     }
 
     const buscarNivel = async () => {
       setLoadingNivel(true);
+
       try {
         const res = await fetch(`${API}/nivel`, {
           method: "POST",
@@ -44,32 +52,37 @@ export default function Login() {
           body: JSON.stringify({ email }),
         });
 
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.nivel) {
-          setNivelUsuario(data.nivel);
-        } else {
+        if (!res.ok) {
           setNivelUsuario("");
+          return;
         }
-      } catch {
+
+        const data = await res.json();
+
+        setNivelUsuario(data?.nivel || "");
+      } catch (err) {
+        console.error("Erro ao buscar nível:", err);
         setNivelUsuario("");
       } finally {
         setLoadingNivel(false);
       }
     };
 
-    buscarNivel();
+    const delay = setTimeout(buscarNivel, 500); // evita flood de requisição
+    return () => clearTimeout(delay);
   }, [email]);
 
-  // 🔐 Redireciona se já logado
+  // 🔐 Redirecionamento seguro
   useEffect(() => {
     const token = localStorage.getItem("token");
+
     if (token && !checkedAuth && location.pathname !== "/home") {
       setCheckedAuth(true);
       navigate("/home", { replace: true });
     }
   }, [navigate, location.pathname, checkedAuth]);
 
-  // LOGIN
+  // 🔐 LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
     setErro("");
@@ -83,20 +96,23 @@ export default function Login() {
       });
 
       const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        setErro(data.erro || "Erro no login");
+        setErro(data?.erro || "Erro no login");
         return;
       }
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("usuarioLogado", JSON.stringify(data.usuario));
+
       navigate("/home", { replace: true });
-    } catch {
+    } catch (err) {
+      console.error(err);
       setErro("Erro ao conectar com servidor");
     }
   };
 
-  // RECUPERAR SENHA
+  // 🔑 RECUPERAR SENHA
   const recuperarSenha = async () => {
     setErro("");
     setMensagem("");
@@ -114,18 +130,20 @@ export default function Login() {
       });
 
       const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        setErro(data.erro || "Erro ao recuperar senha");
+        setErro(data?.erro || "Erro ao recuperar senha");
         return;
       }
 
       setMensagem("Email de recuperação enviado!");
-    } catch {
+    } catch (err) {
+      console.error(err);
       setErro("Erro ao solicitar reset");
     }
   };
 
-  // FORMATAR NÍVEL
+  // 🎯 FORMATAR NÍVEL
   const formatarNivel = (nivel) => {
     const mapa = {
       USER: "Usuário",
@@ -137,7 +155,7 @@ export default function Login() {
     return mapa[nivel] || nivel;
   };
 
-  // CADASTRO
+  // 🧾 CADASTRO
   const handleCadastrarUsuario = async () => {
     setErro("");
     setMensagem("");
@@ -155,8 +173,9 @@ export default function Login() {
       });
 
       const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        setErro(data.erro || "Erro ao cadastrar");
+        setErro(data?.erro || "Erro ao cadastrar");
         return;
       }
 
@@ -166,7 +185,8 @@ export default function Login() {
       setSenhaCad("");
       setNivel("USER");
       setMostrarCadastro(false);
-    } catch {
+    } catch (err) {
+      console.error(err);
       setErro("Erro ao cadastrar");
     }
   };
@@ -174,7 +194,7 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        {/* LOGO */}
+        {/* ✅ LOGO CORRIGIDA */}
         <h1 className="logo-title">
           <img src={logoPath} alt="ADTAG Logo" className="logo" />
           ADTAG

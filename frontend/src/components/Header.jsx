@@ -1,30 +1,33 @@
-import { FaUserPlus, FaUserSlash, FaRightFromBracket } from "react-icons/fa6";
+import { FaUserPlus, FaRightFromBracket } from "react-icons/fa6";
 import { PiUserSwitchLight } from "react-icons/pi";
+import { RiAdminFill } from "react-icons/ri";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Header.css";
-import { RiAdminFill } from "react-icons/ri";
 
-// Se a logo estiver na pasta "public/assets", use caminho absoluto:
+// ✅ Logo na pasta public
 const logoPath = "/assets/adtag.png";
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isPastor = location.pathname === "/pastor";
-  const isAceitaramJesus = location.pathname === "/aceitaram-jesus";
+  // 🔥 Função para verificar rota ativa (melhor que várias variáveis)
+  const isActive = (path) => location.pathname === path;
 
+  // 🔐 Usuário logado (seguro)
   let usuario = null;
-
   try {
-    usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+    const stored = localStorage.getItem("usuarioLogado");
+    usuario = stored ? JSON.parse(stored) : null;
   } catch {
     usuario = null;
   }
 
+  // 🔓 Logout completo
   function handleLogout() {
     localStorage.removeItem("usuarioLogado");
-    navigate("/login");
+    localStorage.removeItem("token"); // 🔥 importante
+    navigate("/login", { replace: true });
   }
 
   return (
@@ -36,14 +39,14 @@ export default function Header() {
 
       <div className="acoes">
         <button
-          className={`btn-outline ${!isPastor && !isAceitaramJesus ? "active-outline" : ""}`}
+          className={`btn-outline ${isActive("/home") ? "active-outline" : ""}`}
           onClick={() => navigate("/home")}
         >
           <FaUserPlus /> Cadastrar Visitante
         </button>
 
         <button
-          className={`btn-outline ${isAceitaramJesus ? "active-outline" : ""}`}
+          className={`btn-outline ${isActive("/aceitaram-jesus") ? "active-outline" : ""}`}
           onClick={() => navigate("/aceitaram-jesus")}
         >
           <PiUserSwitchLight color="#e02020" />
@@ -51,7 +54,7 @@ export default function Header() {
         </button>
 
         <button
-          className={`btn-outline ${isPastor ? "active-outline" : ""}`}
+          className={`btn-outline ${isActive("/pastor") ? "active-outline" : ""}`}
           onClick={() => navigate("/pastor")}
         >
           Painel do Pastor
