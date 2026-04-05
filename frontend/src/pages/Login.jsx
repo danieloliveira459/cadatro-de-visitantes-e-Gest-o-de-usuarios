@@ -26,14 +26,14 @@ export default function Login() {
 
   const [checkedAuth, setCheckedAuth] = useState(false);
 
-  // BUSCAR NÍVEL COM DELAY (DEBOUNCE)
+  // 🔥 BUSCAR NÍVEL (SEM DELAY)
   useEffect(() => {
     if (!email) {
       setNivelUsuario("");
       return;
     }
 
-    const delay = setTimeout(async () => {
+    const buscarNivel = async () => {
       setLoadingNivel(true);
 
       try {
@@ -45,13 +45,7 @@ export default function Login() {
           body: JSON.stringify({ email }),
         });
 
-        let data = {};
-        try {
-          data = await res.json();
-        } catch {
-          setNivelUsuario("");
-          return;
-        }
+        const data = await res.json().catch(() => ({}));
 
         if (res.ok && data.nivel) {
           setNivelUsuario(data.nivel);
@@ -63,12 +57,12 @@ export default function Login() {
       } finally {
         setLoadingNivel(false);
       }
-    }, 500);
+    };
 
-    return () => clearTimeout(delay);
+    buscarNivel();
   }, [email]);
 
-  // REDIRECIONA SE JÁ ESTIVER LOGADO
+  // 🔐 REDIRECIONA SE JÁ LOGADO
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -91,13 +85,7 @@ export default function Login() {
         body: JSON.stringify({ email, senha }),
       });
 
-      let data = {};
-      try {
-        data = await res.json();
-      } catch {
-        setErro("Erro inesperado do servidor");
-        return;
-      }
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         setErro(data.erro || "Erro no login");
@@ -130,13 +118,7 @@ export default function Login() {
         body: JSON.stringify({ email }),
       });
 
-      let data = {};
-      try {
-        data = await res.json();
-      } catch {
-        setErro("Erro no servidor");
-        return;
-      }
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         setErro(data.erro || "Erro ao recuperar senha");
@@ -149,7 +131,7 @@ export default function Login() {
     }
   };
 
-  // FORMATAR NÍVEL BONITO
+  // FORMATAR NÍVEL
   const formatarNivel = (nivel) => {
     const mapa = {
       USER: "Usuário",
@@ -184,13 +166,7 @@ export default function Login() {
         }),
       });
 
-      let data = {};
-      try {
-        data = await res.json();
-      } catch {
-        setErro("Erro no servidor");
-        return;
-      }
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         setErro(data.erro || "Erro ao cadastrar");
@@ -213,7 +189,7 @@ export default function Login() {
     <div className="login-container">
       <div className="login-card">
 
-        {/* LOGO NO LUGAR DO ÍCONE */}
+        {/* LOGO */}
         <h1 className="logo-title">
           <img src={logo} alt="ADTAG Logo" className="logo" />
           ADTAG

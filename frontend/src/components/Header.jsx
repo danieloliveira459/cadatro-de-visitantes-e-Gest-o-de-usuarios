@@ -3,7 +3,9 @@ import { PiUserSwitchLight } from "react-icons/pi";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Header.css";
 import { RiAdminFill } from "react-icons/ri";
-import "../assents/image/LOGOMARCA_ADTAG_page-0005.jpg"
+
+// ✅ IMPORT CORRETO DA LOGO
+import logo from "../assets/image/LOGOMARCA_ADTAG_page-0005.jpg";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -12,7 +14,6 @@ export default function Header() {
   const isPastor = location.pathname === "/pastor";
   const isAceitaramJesus = location.pathname === "/aceitaram-jesus";
 
-  // forma segura
   let usuario = null;
 
   try {
@@ -28,10 +29,10 @@ export default function Header() {
 
   return (
     <header className="header">
-     <h1 className="ADTAG">
-  <img src={logo} alt="ADTAG Logo" className="logo-inline" />
-  Sistema de recepção, acompanhamento e gestão de visitantes
-</h1>
+      <h1 className="ADTAG">
+        <img src={logo} alt="ADTAG Logo" className="logo-inline" />
+        Sistema de recepção, acompanhamento e gestão de visitantes
+      </h1>
 
       <div className="acoes">
         <button
@@ -45,7 +46,8 @@ export default function Header() {
           className={`btn-outline ${isAceitaramJesus ? "active-outline" : ""}`}
           onClick={() => navigate("/aceitaram-jesus")}
         >
-          <PiUserSwitchLight color="#e02020"/> Cadastrar quem aceitou Jesus
+          <PiUserSwitchLight color="#e02020" />
+          Cadastrar quem aceitou Jesus
         </button>
 
         <button
