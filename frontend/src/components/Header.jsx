@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./Header.css";
 
 // ✅ Logo na pasta public
-const logoPath = "/assets/adtag.png";
+const logoPath = "../assets/adtag.png";
 
 export default function Header() {
   const navigate = useNavigate();

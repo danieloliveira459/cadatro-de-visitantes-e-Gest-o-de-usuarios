@@ -4,7 +4,7 @@ import { TbUserShare } from "react-icons/tb";
 import "./Login.css";
 
 // ✅ Logo na pasta public
-const logoPath = "/assets/adtag.png";
+const logoPath = "../assets/adtag.png";
 
 // ✅ Garante que a API existe
 const BASE_URL = import.meta.env.VITE_API_URL;
