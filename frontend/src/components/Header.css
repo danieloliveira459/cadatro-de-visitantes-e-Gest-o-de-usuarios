@@ -50,3 +50,14 @@
   font-weight: bold;
   margin-inline-start: 10px;
 }
+
+.logo-img {
+  inline-size: 45px;
+  block-size: 45px;
+  object-fit: contain;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}

@@ -1,9 +1,10 @@
-import { FaUserPlus, FaUserSlash, FaRightFromBracket } from "react-icons/fa6";
+import { FaUserPlus, FaRightFromBracket } from "react-icons/fa6";
 import { PiUserSwitchLight } from "react-icons/pi";
-import { useNavigate, useLocation } from "react-router-dom";
-import "./Header.css";
 import { RiAdminFill } from "react-icons/ri";
 import { GiChurch } from "react-icons/gi";
+import { useNavigate, useLocation } from "react-router-dom";
+import logo from "../assents/image/LOGOMARCA_ADTAG_page-0005.jpg";
+import "./Header.css";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -12,7 +13,6 @@ export default function Header() {
   const isPastor = location.pathname === "/pastor";
   const isAceitaramJesus = location.pathname === "/aceitaram-jesus";
 
-  // forma segura
   let usuario = null;
 
   try {
@@ -23,15 +23,27 @@ export default function Header() {
 
   function handleLogout() {
     localStorage.removeItem("usuarioLogado");
+    localStorage.removeItem("token");
     navigate("/login");
   }
 
   return (
     <header className="header">
-      <div className="logo">ADTAG</div>
-      <h1 className="titulo">Sistema de recepção, acompanhamento e gestão de visitantes <GiChurch color="#e02020"/></h1>
 
+      {/* LOGO */}
+      <div className="logo">
+        <img src={logo} alt="ADTAG Logo" className="logo-img" />
+      </div>
+
+      {/* TÍTULO */}
+      <h1 className="titulo">
+        Sistema de recepção, acompanhamento e gestão de visitantes{" "}
+        <GiChurch color="#e02020" />
+      </h1>
+
+      {/* AÇÕES */}
       <div className="acoes">
+
         <button
           className={`btn-outline ${!isPastor && !isAceitaramJesus ? "active-outline" : ""}`}
           onClick={() => navigate("/home")}
@@ -43,7 +55,7 @@ export default function Header() {
           className={`btn-outline ${isAceitaramJesus ? "active-outline" : ""}`}
           onClick={() => navigate("/aceitaram-jesus")}
         >
-          <PiUserSwitchLight color="#e02020"/> Cadastrar quem aceitou Jesus
+          <PiUserSwitchLight color="#e02020" /> Cadastrar quem aceitou Jesus
         </button>
 
         <button
@@ -61,6 +73,7 @@ export default function Header() {
         <button className="btn-logout" onClick={handleLogout}>
           <FaRightFromBracket /> Logout
         </button>
+
       </div>
     </header>
   );

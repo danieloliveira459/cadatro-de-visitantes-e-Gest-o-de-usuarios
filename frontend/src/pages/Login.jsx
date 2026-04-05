@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { GiChurch } from "react-icons/gi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TbUserShare } from "react-icons/tb";
+import logo from "../assents/image/LOGOMARCA_ADTAG_page-0005.jpg";
 import "./Login.css";
 
 const API = `${import.meta.env.VITE_API_URL}/api/auth`;
@@ -26,9 +26,7 @@ export default function Login() {
 
   const [checkedAuth, setCheckedAuth] = useState(false);
 
-  //////////////////////////////////////////////////////
   // BUSCAR NÍVEL COM DELAY (DEBOUNCE)
-  //////////////////////////////////////////////////////
   useEffect(() => {
     if (!email) {
       setNivelUsuario("");
@@ -70,9 +68,7 @@ export default function Login() {
     return () => clearTimeout(delay);
   }, [email]);
 
-  //////////////////////////////////////////////////////
-  // REDIRECIONA SE JÁ ESTIVER LOGADO (CORRIGIDO 🔥)
-  //////////////////////////////////////////////////////
+  // REDIRECIONA SE JÁ ESTIVER LOGADO
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -82,9 +78,7 @@ export default function Login() {
     }
   }, [navigate, location.pathname, checkedAuth]);
 
-  //////////////////////////////////////////////////////
   // LOGIN
-  //////////////////////////////////////////////////////
   const handleLogin = async (e) => {
     e.preventDefault();
     setErro("");
@@ -93,9 +87,7 @@ export default function Login() {
     try {
       const res = await fetch(`${API}/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
       });
 
@@ -121,9 +113,7 @@ export default function Login() {
     }
   };
 
-  //////////////////////////////////////////////////////
   // RECUPERAR SENHA
-  //////////////////////////////////////////////////////
   const recuperarSenha = async () => {
     setErro("");
     setMensagem("");
@@ -136,9 +126,7 @@ export default function Login() {
     try {
       const res = await fetch(`${API}/forgot`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
@@ -161,9 +149,7 @@ export default function Login() {
     }
   };
 
-  //////////////////////////////////////////////////////
   // FORMATAR NÍVEL BONITO
-  //////////////////////////////////////////////////////
   const formatarNivel = (nivel) => {
     const mapa = {
       USER: "Usuário",
@@ -176,9 +162,7 @@ export default function Login() {
     return mapa[nivel] || nivel;
   };
 
-  //////////////////////////////////////////////////////
   // CADASTRO
-  //////////////////////////////////////////////////////
   const handleCadastrarUsuario = async () => {
     setErro("");
     setMensagem("");
@@ -191,9 +175,7 @@ export default function Login() {
     try {
       const res = await fetch(`${API}/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nome,
           email: emailCad,
@@ -230,7 +212,13 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1><GiChurch color="#e02020" /> ADTAG</h1>
+
+        {/* LOGO NO LUGAR DO ÍCONE */}
+        <h1 className="logo-title">
+          <img src={logo} alt="ADTAG Logo" className="logo" />
+          ADTAG
+        </h1>
+
         <h2>LOGIN</h2>
 
         {erro && <p className="erro">{erro}</p>}
@@ -315,6 +303,7 @@ export default function Login() {
             </button>
           </div>
         )}
+
       </div>
     </div>
   );

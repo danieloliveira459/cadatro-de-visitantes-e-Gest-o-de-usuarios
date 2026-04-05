@@ -1,36 +1,45 @@
 import { db } from "../config/db.js";
 
+// =====================
 // LISTAR AVISOS
+// =====================
 export const listarAvisos = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM aviso");
+    const [rows] = await db.query(
+      "SELECT * FROM avisos ORDER BY id DESC"
+    );
+
     return res.json(rows);
   } catch (err) {
     console.error("ERRO LISTAR AVISOS:", err);
-    return res.status(500).json({ error: err.message });
+
+    return res.status(500).json({
+      error: "Erro ao listar avisos",
+      details: err.message,
+    });
   }
 };
 
+// =====================
 // CRIAR AVISO
+// =====================
 export const criarAviso = async (req, res) => {
   try {
-    const { titulo, mensagem, data } = req.body;
+    const { titulo, descricao } = req.body;
 
-    if (!titulo || !mensagem) {
+    // validação mais segura
+    if (!titulo?.trim() || !descricao?.trim()) {
       return res.status(400).json({
-        error: "Título e mensagem são obrigatórios",
+        error: "Título e descrição são obrigatórios",
       });
     }
 
-    const dataFormatada = (data ? new Date(data) : new Date())
-      .toISOString()
-      .slice(0, 19)
-      .replace("T", " ");
+    console.log("BODY RECEBIDO:", req.body);
 
     await db.query(
-      `INSERT INTO aviso (titulo, mensagem, data)
-       VALUES (?, ?, ?)`,
-      [titulo, mensagem, dataFormatada]
+      `INSERT INTO avisos (titulo, descricao, data)
+       VALUES (?, ?, NOW())`,
+      [titulo.trim(), descricao.trim()]
     );
 
     return res.status(201).json({
@@ -38,23 +47,29 @@ export const criarAviso = async (req, res) => {
     });
   } catch (err) {
     console.error("ERRO CRIAR AVISO:", err);
-    return res.status(500).json({ error: err.message });
+
+    return res.status(500).json({
+      error: "Erro ao criar aviso",
+      details: err.message,
+    });
   }
 };
 
+// =====================
 // DELETAR AVISO
+// =====================
 export const deletarAviso = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
+    if (!id || isNaN(id)) {
       return res.status(400).json({
-        error: "ID é obrigatório",
+        error: "ID inválido",
       });
     }
 
     const [result] = await db.query(
-      "DELETE FROM aviso WHERE id = ?",
+      "DELETE FROM avisos WHERE id = ?",
       [id]
     );
 
@@ -64,11 +79,15 @@ export const deletarAviso = async (req, res) => {
       });
     }
 
-    return res.json({
+    return res.status(200).json({
       msg: "Aviso excluído com sucesso",
     });
   } catch (err) {
     console.error("ERRO DELETAR AVISO:", err);
-    return res.status(500).json({ error: err.message });
+
+    return res.status(500).json({
+      error: "Erro ao deletar aviso",
+      details: err.message,
+    });
   }
 };

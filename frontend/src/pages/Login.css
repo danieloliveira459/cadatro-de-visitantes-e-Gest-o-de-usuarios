@@ -95,3 +95,15 @@
   background-color: #e02020;
   color: white;
 }
+
+.logo-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  inline-size: 45px;
+  block-size: 45px;
+  object-fit: contain;
+}
