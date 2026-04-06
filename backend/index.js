@@ -16,65 +16,43 @@ const app = express();
 // __dirname em ESModules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// =====================
 // MIDDLEWARES
-// =====================
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  })
-);
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+}));
 
 app.use(express.json());
-
-// =====================
-// ROTAS API (PRIMEIRO)
-// =====================
+// ROTAS API
 app.use("/api/visitantes", visitanteRoutes);
 app.use("/api/aceitaramJesus", aceitaramJesusRoutes);
 app.use("/api/avisos", avisoRoutes);
 app.use("/api/programacoes", programacaoRoutes);
 app.use("/api/auth", authRoutes);
 
-// =====================
 // TESTE API
-// =====================
 app.get("/api", (req, res) => {
   res.json({ message: "API rodando com sucesso!" });
 });
 
-// =====================
-// FRONTEND (React build)
-// =====================
+// FRONTEND 
 const frontendPath = path.join(__dirname, "../frontend/dist");
 
-// Só serve se existir build
 if (fs.existsSync(frontendPath)) {
   app.use(express.static(frontendPath));
 
-  // 🔥 CORREÇÃO AQUI
-  app.get("*", (req, res, next) => {
-    // deixa API passar
-    if (req.path.startsWith("/api")) {
-      return next(); // 🔥 ESSENCIAL
-    }
-
+  // SPA fallback (React Router)
+  app.get("*", (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
-
-// =====================
-// 404 API (FINAL)
-// =====================
+// 404 API (SÓ API)
 app.use("/api", (req, res) => {
-  res.status(404).json({ message: "Rota da API não encontrada" });
+  res.status(404).json({
+    message: "Rota da API não encontrada",
+  });
 });
-
-// =====================
 // PORTA
-// =====================
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
