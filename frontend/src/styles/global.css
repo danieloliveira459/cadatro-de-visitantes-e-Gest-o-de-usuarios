@@ -54,6 +54,7 @@ input:focus {
   border-radius: 8px;
   font-weight: bold;
   font-size: 14px;
+  background: var(--primary);
 }
 
 /* TÍTULO */

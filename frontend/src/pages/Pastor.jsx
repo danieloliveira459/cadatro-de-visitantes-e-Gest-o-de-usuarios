@@ -40,16 +40,16 @@ export default function Pastor() {
 
   const carregarTudo = async () => {
     try {
-      const resVisitantes = await fetch(`${API}/visitantes`);
+      const resVisitantes = await fetch(`${BASE_URL}/visitantes`);
       const visitantesData = await resVisitantes.json();
       setVisitantes(visitantesData);
 
-      const resAvisos = await fetch(`${API}/avisos`);
+      const resAvisos = await fetch(`${BASE_URL}/avisos`);
       const avisosData = await resAvisos.json();
       setAvisos(avisosData);
 
       try {
-        const resProgramacoes = await fetch(`${API}/programacoes`);
+        const resProgramacoes = await fetch(`${BASE_URL}/programacoes`);
         if (resProgramacoes.ok) {
           const programacoesData = await resProgramacoes.json();
           setProgramacoes(programacoesData);
@@ -57,7 +57,7 @@ export default function Pastor() {
       } catch {}
 
       try {
-        const resJesus = await fetch(`${API}/aceitaramJesus`);
+        const resJesus = await fetch(`${BASE_URL}/aceitaramJesus`);
         if (resJesus.ok) {
           const jesusData = await resJesus.json();
           setAceitaramJesus(jesusData);
@@ -72,7 +72,7 @@ export default function Pastor() {
   const adicionarVisitante = async () => {
     if (!nome || !telefone) return alert("Preencha os campos!");
 
-    await fetch(`${API}/visitantes`, {
+    await fetch(`${BASE_URL}/visitantes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -98,7 +98,7 @@ export default function Pastor() {
     if (!confirmar) return;
 
     try {
-      await fetch(`${API}/visitantes/${id}`, {
+      await fetch(`${BASE_URL}/visitantes/${id}`, {
         method: "DELETE",
       });
 
@@ -112,7 +112,7 @@ export default function Pastor() {
   const adicionarAviso = async () => {
     if (!titulo || !descricao) return alert("Preencha os campos!");
 
-    await fetch(`${API}/avisos`, {
+    await fetch(`${BASE_URL}/avisos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -132,7 +132,7 @@ export default function Pastor() {
     if (!confirmar) return;
 
     try {
-      await fetch(`${API}/avisos/${id}`, {
+      await fetch(`${BASE_URL}/avisos/${id}`, {
         method: "DELETE",
       });
 
@@ -146,7 +146,7 @@ export default function Pastor() {
     if (!dia || !horario || !atividade) return;
 
     try {
-      await fetch(`${API}/programacoes`, {
+      await fetch(`${BASE_URL}/programacoes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -173,7 +173,7 @@ export default function Pastor() {
     if (!confirmar) return;
 
     try {
-      await fetch(`${API}/programacoes/${id}`, {
+      await fetch(`${BASE_URL}/programacoes/${id}`, {
         method: "DELETE",
       });
 
@@ -186,7 +186,7 @@ export default function Pastor() {
   const adicionarAceitouJesus = async () => {
     if (!nome) return alert("Nome obrigatório!");
 
-    const res = await fetch(`${API}/aceitaramJesus`, {
+    const res = await fetch(`${BASE_URL}/aceitaramJesus`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -210,7 +210,7 @@ export default function Pastor() {
     if (!confirmar) return;
 
     try {
-      await fetch(`${API}/aceitaramJesus/${id}`, {
+      await fetch(`${BASE_URL}/aceitaramJesus/${id}`, {
         method: "DELETE",
       });
 
@@ -320,7 +320,7 @@ const gerarPDF = (tipo) => {
 };
 
 const deletarAviso = async (id) => {
-  await fetch(`${API}/avisos/${id}`, {
+  await fetch(`${BASE_URL}/avisos/${id}`, {
     method: "DELETE",
   });
 
@@ -438,11 +438,79 @@ return (
   </div>
 )}
 
+{/* VISITANTES */}
+{aba === "visitantes" && (
+  <div className="painel">
+    <div className="card">
+      <h2 className="card-title">
+        <FaUsers color="#e02020" /> Estatísticas
+      </h2>
+
+      <div className="stats-box">
+        <span>Total de Visitantes</span>
+        <h1>{visitantes.length}</h1>
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="card-header">
+        <h2 className="card-title">
+          <FaUsers color="#e02020" /> Visitantes Cadastrados
+        </h2>
+
+        <button onClick={() => gerarPDF("visitantes")} className="btn-pdf">
+          <FaFilePdf /> Gerar PDF
+        </button>
+      </div>
+
+      <span>Total: {visitantes.length}</span>
+
+      {visitantes.length === 0 ? (
+        <div className="empty">
+          <FaUsers size={40} />
+          <p>Nenhum visitante cadastrado ainda.</p>
+        </div>
+      ) : (
+        <table className="tabela">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Função/ND</th>
+              <th>Telefone</th>
+              <th>Igreja</th>
+              <th>Data</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {visitantes.map((v) => (
+              <tr key={v.id}>
+                <td>{v.nome}</td>
+                <td>{v.cargo}</td>
+                <td>{v.telefone}</td>
+                <td>{v.igreja}</td>
+                <td>{new Date(v.data).toLocaleString("pt-BR")}</td>
+                <td style={{ textAlign: "center" }}>
+                  <FaTrash
+                    className="delete"
+                    onClick={() => handleDeleteVisitante(v.id)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  </div>
+)}
+
 {/* AVISOS */}
 {aba === "avisos" && (
   <div className="avisos-grid">
     <div className="card">
-      <h3><MdWarning color="#e02020"/> Novo Aviso</h3>
+      <h3><MdWarning color="#e02020" /> Novo Aviso</h3>
 
       <div className="total-box">
         <span>Total de Avisos</span>
@@ -462,7 +530,7 @@ return (
 
     <div className="card">
       <div className="card-header">
-        <h3><MdWarning color="#e02020"/> Avisos Importantes</h3>
+        <h3><MdWarning color="#e02020" /> Avisos Importantes</h3>
 
         <button onClick={() => gerarPDF("avisos")} className="btn-pdf">
           <FaFilePdf /> Gerar PDF
@@ -480,6 +548,7 @@ return (
             <th>Ações</th>
           </tr>
         </thead>
+
         <tbody>
           {avisos.map((a) => (
             <tr key={a.id}>
@@ -503,9 +572,8 @@ return (
 {/* PROGRAMAÇÃO */}
 {aba === "programacao" && (
   <div className="avisos-grid">
-
     <div className="card">
-      <h3><FaCalendarAlt color="#e02020"/> Novo Evento</h3>
+      <h3><FaCalendarAlt color="#e02020" /> Novo Evento</h3>
 
       <label>Dia</label>
       <select value={dia} onChange={(e) => setDia(e.target.value)}>
@@ -520,10 +588,17 @@ return (
       </select>
 
       <label>Horário</label>
-      <input type="time" value={horario} onChange={(e) => setHorario(e.target.value)} />
+      <input
+        type="time"
+        value={horario}
+        onChange={(e) => setHorario(e.target.value)}
+      />
 
       <label>Atividade</label>
-      <input value={atividade} onChange={(e) => setAtividade(e.target.value)} />
+      <input
+        value={atividade}
+        onChange={(e) => setAtividade(e.target.value)}
+      />
 
       <button className="btn-red" onClick={adicionarProgramacao}>
         Adicionar
@@ -531,12 +606,13 @@ return (
     </div>
 
     <div className="card">
-      <h3>
-        <FaCalendarAlt color="#e02020"/> Programação
+      <div className="card-header">
+        <h3><FaCalendarAlt color="#e02020" /> Programação</h3>
+
         <button onClick={() => gerarPDF("programacao")} className="btn-pdf">
           <FaFilePdf /> Gerar PDF
         </button>
-      </h3>
+      </div>
 
       <table className="tabela">
         <thead>
@@ -548,7 +624,7 @@ return (
             <th>Ações</th>
           </tr>
         </thead>
-        <tbody></tbody>
+
         <tbody>
           {programacoes.map((p) => (
             <tr key={p.id}>
@@ -574,7 +650,7 @@ return (
 {aba === "aceitaramJesus" && (
   <div className="avisos-grid">
     <div className="card">
-      <h3><PiUserSwitchLight color="#e02020"/> Estatísticas</h3>
+      <h3><PiUserSwitchLight color="#e02020" /> Estatísticas</h3>
 
       <div className="total-box">
         <span>Total</span>
@@ -584,7 +660,7 @@ return (
 
     <div className="card">
       <div className="card-header">
-        <h3><PiUserSwitchLight color="#e02020"/> Aceitou Jesus</h3>
+        <h3><PiUserSwitchLight color="#e02020" /> Aceitou Jesus</h3>
 
         <button onClick={() => gerarPDF("aceitaramJesus")} className="btn-pdf">
           <FaFilePdf /> Gerar PDF
@@ -604,6 +680,7 @@ return (
             <th>Ações</th>
           </tr>
         </thead>
+
         <tbody>
           {aceitaramJesus.map((p) => (
             <tr key={p.id}>
