@@ -52,7 +52,6 @@
 }
 
 .logo-img {
-  inline-size: 45px;
   block-size: 45px;
   object-fit: contain;
 }
