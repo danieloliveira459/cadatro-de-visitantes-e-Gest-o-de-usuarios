@@ -1,81 +1,54 @@
-import { FaUserPlus, FaRightFromBracket } from "react-icons/fa6";
+import { FaUserPlus, FaUserSlash, FaRightFromBracket } from "react-icons/fa6";
 import { PiUserSwitchLight } from "react-icons/pi";
-import { RiAdminFill } from "react-icons/ri";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Header.css";
-
-//  IMPORT CORRETO DA LOGO (src/assets)
-import logo from "../assets/adtag.png";
+import { RiAdminFill } from "react-icons/ri";
+import { GiChurch } from "react-icons/gi";
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //  Verifica rota ativa
-  const isActive = (path) => location.pathname === path;
+  const isPastor = location.pathname === "/pastor";
+  const isAceitaramJesus = location.pathname === "/aceitaram-jesus";
 
-  //  Usuário logado (seguro)
+  // forma segura
   let usuario = null;
+
   try {
-    const stored = localStorage.getItem("usuarioLogado");
-    usuario = stored && stored !== "undefined" ? JSON.parse(stored) : null;
-  } catch (err) {
-    console.error("Erro ao ler usuário:", err);
+    usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+  } catch {
     usuario = null;
   }
 
-  //  Logout completo
   function handleLogout() {
     localStorage.removeItem("usuarioLogado");
-    localStorage.removeItem("token");
-    navigate("/login", { replace: true });
-  }
-
-  // Navegação segura
-  function goTo(path) {
-    if (location.pathname !== path) {
-      navigate(path);
-    }
+    navigate("/login");
   }
 
   return (
     <header className="header">
-      <h1 className="ADTAG">
-        <img
-          src={logo}
-          alt="ADTAG Logo"
-          className="logo-inline"
-          onError={(e) => {
-            console.warn("❌ Logo não carregou:", logo);
-            e.target.style.display = "none";
-          }}
-        />
-        Sistema de recepção, acompanhamento e gestão de visitantes
-      </h1>
+      <div className="logo">ADTAG</div>
+      <h1 className="titulo">Sistema de recepção, acompanhamento e gestão de visitantes <GiChurch color="#e02020"/></h1>
 
       <div className="acoes">
         <button
-          className={`btn-outline ${isActive("/home") ? "active-outline" : ""}`}
-          onClick={() => goTo("/home")}
+          className={`btn-outline ${!isPastor && !isAceitaramJesus ? "active-outline" : ""}`}
+          onClick={() => navigate("/home")}
         >
           <FaUserPlus /> Cadastrar Visitante
         </button>
 
         <button
-          className={`btn-outline ${
-            isActive("/aceitaram-jesus") ? "active-outline" : ""
-          }`}
-          onClick={() => goTo("/aceitaram-jesus")}
+          className={`btn-outline ${isAceitaramJesus ? "active-outline" : ""}`}
+          onClick={() => navigate("/aceitaram-jesus")}
         >
-          <PiUserSwitchLight color="#e02020" />
-          Cadastrar quem aceitou Jesus
+          <PiUserSwitchLight color="#e02020"/> Cadastrar quem aceitou Jesus
         </button>
 
         <button
-          className={`btn-outline ${
-            isActive("/pastor") ? "active-outline" : ""
-          }`}
-          onClick={() => goTo("/pastor")}
+          className={`btn-outline ${isPastor ? "active-outline" : ""}`}
+          onClick={() => navigate("/pastor")}
         >
           Painel do Pastor
         </button>
