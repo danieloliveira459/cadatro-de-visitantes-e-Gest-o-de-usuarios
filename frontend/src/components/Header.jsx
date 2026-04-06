@@ -29,7 +29,7 @@ export default function Header() {
   return (
     <header className="header">
       <div className="logo">ADTAG</div>
-      <h1 className="titulo">Sistema de recepção, acompanhamento e gestão de visitantes <GiChurch color="#e02020"/></h1>
+      <h1 className="titulo">Sistema de recepção, acompanhamento e gestão de visitantes</h1>
 
       <div className="acoes">
         <button
