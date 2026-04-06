@@ -610,7 +610,7 @@ return (
     <td>{p.endereco}</td>
     <td>{p.observacoes}</td>
 
-    {/* 🔥 DATA CORRIGIDA (fuso horário Brasil) */}
+    {/*  DATA CORRIGIDA (fuso horário Brasil) */}
     <td>
       {p.data
         ? new Date(p.data).toLocaleString("pt-BR", {

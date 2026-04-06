@@ -16,24 +16,27 @@ export const criarAceitou = async (req, res) => {
   try {
     const { nome, telefone, endereco, observacoes } = req.body;
 
-    // 🔥 VALIDAÇÃO (evita crash silencioso)
     if (!nome || !telefone) {
       return res.status(400).json({
         error: "Nome e telefone são obrigatórios",
       });
     }
 
-    console.log("BODY RECEBIDO:", req.body);
+    // 🔥 DATA NO HORÁRIO DO BRASIL
+    const dataCadastro = new Date()
+      .toLocaleString("sv-SE", { timeZone: "America/Sao_Paulo" })
+      .replace("T", " ");
 
     await db.query(
       `INSERT INTO aceitaram_jesus 
-      (nome, telefone, endereco, observacoes)
-      VALUES (?, ?, ?, ?)`,
+      (nome, telefone, endereco, observacoes, data)
+      VALUES (?, ?, ?, ?, ?)`,
       [
         nome,
         telefone,
         endereco || null,
         observacoes || null,
+        dataCadastro,
       ]
     );
 
