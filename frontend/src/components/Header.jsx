@@ -27,13 +27,10 @@ export default function Header() {
 
   return (
     <header className="header">
-      <div className="logo">
-        <img
-          src={adtagLogo}
-          alt="Logo ADTAG"
-          style={{ width: "32px", height: "32px", marginRight: "8px" }}
-        />
-        ADTAG
+      {/* LOGO + NOME */}
+      <div className="logo-container">
+        <img src={adtagLogo} alt="ADTAG Logo" className="logo-img" />
+        <span className="logo-text">ADTAG</span>
       </div>
 
       <h1 className="titulo">
