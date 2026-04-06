@@ -34,44 +34,57 @@ export default function Pastor() {
   const [observacoes, setObservacoes] = useState("");
 
   useEffect(() => {
-    carregarTudo();
-  }, []);
+  carregarTudo();
+}, []);
 
-  const carregarTudo = async () => {
-    try {
-      const resVisitantes = await fetch(`${BASE_URL}/visitantes`);
-      const visitantesData = await resVisitantes.json();
-      setVisitantes(visitantesData);
+const carregarTudo = async () => {
+  try {
+    const [
+      resVisitantes,
+      resAvisos,
+      resProgramacoes,
+      resJesus,
+    ] = await Promise.all([
+      fetch(`${BASE_URL}/visitantes`),
+      fetch(`${BASE_URL}/avisos`),
+      fetch(`${BASE_URL}/programacoes`),
+      fetch(`${BASE_URL}/aceitaramJesus`),
+    ]);
 
-      const resAvisos = await fetch(`${BASE_URL}/avisos`);
-      const avisosData = await resAvisos.json();
-      setAvisos(avisosData);
-
-      try {
-        const resProgramacoes = await fetch(`${BASE_URL}/programacoes`);
-        if (resProgramacoes.ok) {
-          const programacoesData = await resProgramacoes.json();
-          setProgramacoes(programacoesData);
-        }
-      } catch {}
-
-      try {
-        const resJesus = await fetch(`${BASE_URL}/aceitaramJesus`);
-        if (resJesus.ok) {
-          const jesusData = await resJesus.json();
-          setAceitaramJesus(jesusData);
-        }
-      } catch {}
-
-    } catch (err) {
-      console.log("Erro ao carregar dados:", err);
+    if (resVisitantes.ok) {
+      const data = await resVisitantes.json();
+      setVisitantes(data);
     }
+
+    if (resAvisos.ok) {
+      const data = await resAvisos.json();
+      setAvisos(data);
+    }
+
+    if (resProgramacoes.ok) {
+      const data = await resProgramacoes.json();
+      setProgramacoes(data);
+    }
+
+    if (resJesus.ok) {
+      const data = await resJesus.json();
+      setAceitaramJesus(data);
+    }
+
+  } catch (err) {
+    console.log("Erro ao carregar dados:", err);
   }
+};
+
   // VISITANTES
   const adicionarVisitante = async () => {
-    if (!nome || !telefone) return alert("Preencha os campos!");
+  try {
+    if (!nome || !telefone) {
+      alert("Preencha os campos!");
+      return;
+    }
 
-    await fetch(`${BASE_URL}/visitantes`, {
+    const res = await fetch(`${BASE_URL}/visitantes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -84,28 +97,39 @@ export default function Pastor() {
       }),
     });
 
+    if (!res.ok) throw new Error("Erro ao cadastrar visitante");
+
     await carregarTudo();
 
     setNome("");
     setTelefone("");
     setEndereco("");
     setObservacoes("");
-  };
+
+  } catch (err) {
+    console.log("Erro visitante:", err);
+    alert("Erro ao adicionar visitante");
+  }
+};
 
   const handleDeleteVisitante = async (id) => {
+  try {
     const confirmar = window.confirm("Deseja excluir este visitante?");
     if (!confirmar) return;
 
-    try {
-      await fetch(`${BASE_URL}/visitantes/${id}`, {
-        method: "DELETE",
-      });
+    const res = await fetch(`${BASE_URL}/visitantes/${id}`, {
+      method: "DELETE",
+    });
 
-      await carregarTudo();
-    } catch (err) {
-      console.log("Erro ao deletar visitante:", err);
-    }
-  };
+    if (!res.ok) throw new Error("Erro ao deletar visitante");
+
+    await carregarTudo();
+
+  } catch (err) {
+    console.log("Erro ao deletar visitante:", err);
+    alert("Erro ao excluir visitante");
+  }
+};
   // AVISOS
 
 const adicionarAviso = async () => {
@@ -127,8 +151,9 @@ const adicionarAviso = async () => {
     setDescricao("");
 
     await carregarTudo();
+
   } catch (err) {
-    console.log(err);
+    console.log("Erro aviso:", err);
     alert("Erro ao adicionar aviso");
   }
 };
@@ -151,17 +176,15 @@ const adicionarAviso = async () => {
       }),
     });
 
-    if (!res.ok) {
-      throw new Error("Erro ao cadastrar programação");
-    }
+    if (!res.ok) throw new Error("Erro ao cadastrar programação");
 
-    // limpa campos
     setDia("");
     setHorario("");
     setAtividade("");
     setResponsavel("");
 
     await carregarTudo();
+
   } catch (err) {
     console.log("Erro programação:", err);
     alert("Erro ao adicionar programação");
@@ -169,13 +192,15 @@ const adicionarAviso = async () => {
 };
   // ACEITARAM JESUS
   const adicionarAceitouJesus = async () => {
-    if (!nome) return alert("Nome obrigatório!");
+  try {
+    if (!nome) {
+      alert("Nome obrigatório!");
+      return;
+    }
 
     const res = await fetch(`${BASE_URL}/aceitaramJesus`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         nome,
         telefone,
@@ -184,26 +209,34 @@ const adicionarAviso = async () => {
       }),
     });
 
-    const data = await res.json();
-    console.log("RESPOSTA DO BACKEND:", data);
+    if (!res.ok) throw new Error("Erro ao salvar registro");
 
     await carregarTudo();
-  };
+
+  } catch (err) {
+    console.log("Erro aceitou Jesus:", err);
+    alert("Erro ao salvar registro");
+  }
+};
 
   const handleDeleteAceitouJesus = async (id) => {
+  try {
     const confirmar = window.confirm("Deseja excluir este registro?");
     if (!confirmar) return;
 
-    try {
-      await fetch(`${BASE_URL}/aceitaramJesus/${id}`, {
-        method: "DELETE",
-      });
+    const res = await fetch(`${BASE_URL}/aceitaramJesus/${id}`, {
+      method: "DELETE",
+    });
 
-      await carregarTudo();
-    } catch (err) {
-      console.log("Erro ao deletar registro:", err);
-    }
-  };
+    if (!res.ok) throw new Error("Erro ao deletar registro");
+
+    await carregarTudo();
+
+  } catch (err) {
+    console.log("Erro ao deletar registro:", err);
+    alert("Erro ao excluir registro");
+  }
+};
 const gerarPDF = (tipo) => {
   const doc = new jsPDF();
 
@@ -304,12 +337,42 @@ const gerarPDF = (tipo) => {
   doc.save(`${nomeArquivo}.pdf`);
 };
 
-const deletarAviso = async (id) => {
-  await fetch(`${BASE_URL}/avisos/${id}`, {
-    method: "DELETE",
-  });
+const handleDeleteProgramacao = async (id) => {
+  try {
+    const confirmar = window.confirm("Deseja excluir esta programação?");
+    if (!confirmar) return;
 
-  carregarTudo();
+    const res = await fetch(`${BASE_URL}/programacoes/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) throw new Error("Erro ao deletar programação");
+
+    await carregarTudo();
+
+  } catch (err) {
+    console.log("Erro ao deletar programação:", err);
+    alert("Erro ao excluir programação");
+  }
+};
+
+const handleDeleteAviso = async (id) => {
+  try {
+    const confirmar = window.confirm("Deseja excluir este aviso?");
+    if (!confirmar) return;
+
+    const res = await fetch(`${BASE_URL}/avisos/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) throw new Error("Erro ao deletar aviso");
+
+    await carregarTudo();
+
+  } catch (err) {
+    console.log("Erro ao deletar aviso:", err);
+    alert("Erro ao excluir aviso");
+  }
 };
 
 return (
