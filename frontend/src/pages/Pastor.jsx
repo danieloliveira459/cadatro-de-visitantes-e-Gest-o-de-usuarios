@@ -603,23 +603,30 @@ return (
           </tr>
         </thead>
         <tbody>
-          {aceitaramJesus.map((p) => (
-            <tr key={p.id}>
-              <td>{p.nome}</td>
-              <td>{p.telefone}</td>
-              <td>{p.endereco}</td>
-              <td>{p.observacoes}</td>
-              <td>{new Date(p.data).toLocaleString("pt-BR", {
-                timeZone: "America/Brasilia"
-              })}</td>
-              <td style={{ textAlign: "center" }}>
-                <FaTrash
-                  className="delete"
-                  onClick={() => handleDeleteAceitouJesus(p.id)}
-                />
-              </td>
-            </tr>
-          ))}
+       {aceitaramJesus.map((p) => (
+  <tr key={p.id}>
+    <td>{p.nome}</td>
+    <td>{p.telefone}</td>
+    <td>{p.endereco}</td>
+    <td>{p.observacoes}</td>
+
+    {/* 🔥 DATA CORRIGIDA (fuso horário Brasil) */}
+    <td>
+      {p.data
+        ? new Date(p.data).toLocaleString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          })
+        : "-"}
+    </td>
+
+    <td style={{ textAlign: "center" }}>
+      <FaTrash
+        className="delete"
+        onClick={() => handleDeleteAceitouJesus(p.id)}
+      />
+    </td>
+  </tr>
+))}
         </tbody>
       </table>
     </div>
