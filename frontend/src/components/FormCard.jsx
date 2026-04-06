@@ -51,7 +51,7 @@ export default function FormCard() {
       setTelefone("");
       setIgreja("");
 
-      // 🔥 AVISA O PAINEL DO PASTOR PARA ATUALIZAR A LISTA
+      //  AVISA O PAINEL DO PASTOR PARA ATUALIZAR A LISTA
       window.dispatchEvent(new Event("visitantesAtualizados"));
 
       navigate("/pastor");

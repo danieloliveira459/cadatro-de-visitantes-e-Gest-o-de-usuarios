@@ -3,7 +3,7 @@ import { PiUserSwitchLight } from "react-icons/pi";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Header.css";
 import { RiAdminFill } from "react-icons/ri";
-import { GiChurch } from "react-icons/gi";
+import adtagLogo from "../assets/adtag.png";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -26,11 +26,21 @@ export default function Header() {
     navigate("/login");
   }
 
+  export default function Header() {
   return (
     <header className="header">
       <div className="logo">ADTAG</div>
-      <h1 className="titulo">Sistema de recepção, acompanhamento e gestão de visitantes <GiChurch color="#e02020"/></h1>
-
+      <h1 className="titulo">
+        Sistema de recepção, acompanhamento e gestão de visitantes{" "}
+        <img 
+          src={adtagLogo} 
+          alt="Logo ADTAG" 
+          style={{ width: "32px", height: "32px", marginLeft: "8px" }} 
+        />
+      </h1>
+    </header>
+  );
+}
       <div className="acoes">
         <button
           className={`btn-outline ${!isPastor && !isAceitaramJesus ? "active-outline" : ""}`}
