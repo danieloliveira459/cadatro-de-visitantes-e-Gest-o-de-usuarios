@@ -4,33 +4,34 @@ import { RiAdminFill } from "react-icons/ri";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Header.css";
 
-//  Logo na pasta public
-const logoPath = "../assets/adtag.png";
+// ✅ Caminho correto (public)
+const logoPath = "/assets/adtag.png";
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //  Verifica rota ativa
+  // ✅ Verifica rota ativa
   const isActive = (path) => location.pathname === path;
 
-  //  Usuário logado (seguro)
+  // ✅ Usuário logado (mais seguro)
   let usuario = null;
   try {
     const stored = localStorage.getItem("usuarioLogado");
     usuario = stored && stored !== "undefined" ? JSON.parse(stored) : null;
-  } catch {
+  } catch (err) {
+    console.error("Erro ao ler usuário:", err);
     usuario = null;
   }
 
-  //  Logout completo
+  // ✅ Logout completo
   function handleLogout() {
     localStorage.removeItem("usuarioLogado");
     localStorage.removeItem("token");
     navigate("/login", { replace: true });
   }
 
-  //  Navegação segura (evita clicar na mesma rota)
+  // ✅ Navegação segura (evita reload desnecessário)
   function goTo(path) {
     if (location.pathname !== path) {
       navigate(path);
@@ -44,7 +45,10 @@ export default function Header() {
           src={logoPath}
           alt="ADTAG Logo"
           className="logo-inline"
-          onError={(e) => (e.target.style.display = "none")} //  evita quebrar layout
+          onError={(e) => {
+            console.warn("❌ Logo não carregou:", logoPath);
+            e.target.style.display = "none";
+          }}
         />
         Sistema de recepção, acompanhamento e gestão de visitantes
       </h1>
@@ -58,7 +62,9 @@ export default function Header() {
         </button>
 
         <button
-          className={`btn-outline ${isActive("/aceitaram-jesus") ? "active-outline" : ""}`}
+          className={`btn-outline ${
+            isActive("/aceitaram-jesus") ? "active-outline" : ""
+          }`}
           onClick={() => goTo("/aceitaram-jesus")}
         >
           <PiUserSwitchLight color="#e02020" />
@@ -66,7 +72,9 @@ export default function Header() {
         </button>
 
         <button
-          className={`btn-outline ${isActive("/pastor") ? "active-outline" : ""}`}
+          className={`btn-outline ${
+            isActive("/pastor") ? "active-outline" : ""
+          }`}
           onClick={() => goTo("/pastor")}
         >
           Painel do Pastor
