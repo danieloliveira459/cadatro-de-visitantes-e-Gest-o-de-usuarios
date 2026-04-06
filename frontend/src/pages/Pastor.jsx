@@ -108,79 +108,65 @@ export default function Pastor() {
   };
   // AVISOS
 
-  const adicionarAviso = async () => {
-    if (!titulo || !descricao) return alert("Preencha os campos!");
+const adicionarAviso = async () => {
+  try {
+    if (!titulo || !descricao) {
+      alert("Preencha os campos!");
+      return;
+    }
 
-    await fetch(`${BASE_URL}/avisos`, {
+    const res = await fetch(`${BASE_URL}/avisos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        titulo,
-        descricao,
-      }),
+      body: JSON.stringify({ titulo, descricao }),
     });
+
+    if (!res.ok) throw new Error("Erro ao salvar aviso");
 
     setTitulo("");
     setDescricao("");
 
     await carregarTudo();
-  };
-
-  const handleDeleteAviso = async (id) => {
-    const confirmar = window.confirm("Deseja excluir este aviso?");
-    if (!confirmar) return;
-
-    try {
-      await fetch(`${BASE_URL}/avisos/${id}`, {
-        method: "DELETE",
-      });
-
-      await carregarTudo();
-    } catch (err) {
-      console.log("Erro ao deletar aviso:", err);
-    }
-  };
+  } catch (err) {
+    console.log(err);
+    alert("Erro ao adicionar aviso");
+  }
+};
   // PROGRAMAÇÃO
   const adicionarProgramacao = async () => {
-    if (!dia || !horario || !atividade) return;
-
-    try {
-      await fetch(`${BASE_URL}/programacoes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          dia,
-          horario,
-          atividade,
-          responsavel,
-        }),
-      });
-
-      setDia("");
-      setHorario("");
-      setAtividade("");
-      setResponsavel("");
-
-      await carregarTudo();
-    } catch (err) {
-      console.log("Erro programação:", err);
+  try {
+    if (!dia || !horario || !atividade) {
+      alert("Preencha dia, horário e atividade!");
+      return;
     }
-  };
 
-  const handleDeleteProgramacao = async (id) => {
-    const confirmar = window.confirm("Deseja excluir esta programação?");
-    if (!confirmar) return;
+    const res = await fetch(`${BASE_URL}/programacoes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dia,
+        horario,
+        atividade,
+        responsavel,
+      }),
+    });
 
-    try {
-      await fetch(`${BASE_URL}/programacoes/${id}`, {
-        method: "DELETE",
-      });
-
-      await carregarTudo();
-    } catch (err) {
-      console.log("Erro ao deletar programação:", err);
+    if (!res.ok) {
+      throw new Error("Erro ao cadastrar programação");
     }
-  };
+
+    // limpa campos
+    setDia("");
+    setHorario("");
+    setAtividade("");
+    setResponsavel("");
+
+    await carregarTudo();
+  } catch (err) {
+    console.log("Erro programação:", err);
+    alert("Erro ao adicionar programação");
+  }
+};
   // ACEITARAM JESUS
   const adicionarAceitouJesus = async () => {
     if (!nome) return alert("Nome obrigatório!");
