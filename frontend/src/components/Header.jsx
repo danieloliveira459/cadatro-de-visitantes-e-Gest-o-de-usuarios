@@ -2,6 +2,7 @@ import { FaUserPlus, FaRightFromBracket } from "react-icons/fa6";
 import { PiUserSwitchLight } from "react-icons/pi";
 import { RiAdminFill } from "react-icons/ri";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import "./Header.css";
 import adtagLogo from "../assets/adtag.png";
 
@@ -20,15 +21,25 @@ export default function Header() {
     usuario = null;
   }
 
-  function handleLogout() {
+  // 🔒 PROTEÇÃO: se não estiver logado, volta pro login
+  useEffect(() => {
+    if (!usuario) {
+      navigate("/login");
+    }
+  }, []);
+
+  // 🚪 LOGOUT
+  const handleLogout = () => {
     localStorage.removeItem("usuarioLogado");
-    navigate("/login");
-  }
+
+    // 🔥 força redirecionamento garantido
+    window.location.href = "/login";
+  };
 
   return (
     <header className="header">
       {/* LOGO + NOME */}
-      <div className="logo-container">
+      <div className="logo-container" onClick={() => navigate("/home")} style={{ cursor: "pointer" }}>
         <img src={adtagLogo} alt="ADTAG Logo" className="logo-img" />
         <span className="logo-text">ADTAG</span>
       </div>
