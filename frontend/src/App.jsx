@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
@@ -7,7 +8,7 @@ import Pastor from "./pages/Pastor";
 import Admin from "./pages/Admin";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import AceitaramJesus from "./pages/AceitaramJesus";
-import ResetPassword from "./pages/ResetPasword";
+import ResetPassword from "./pages/ResetPassword"; // 
 
 // FUNÇÃO SEGURA
 function getUsuario() {
@@ -23,23 +24,39 @@ function getUsuario() {
 }
 
 export default function App() {
-  const usuario = getUsuario();
+  const [usuario, setUsuario] = useState(getUsuario());
+
+  //  Atualiza se localStorage mudar (login/logout)
+  useEffect(() => {
+    const handleStorage = () => {
+      setUsuario(getUsuario());
+    };
+
+    window.addEventListener("storage", handleStorage);
+
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   return (
     <BrowserRouter>
       <Routes>
 
-        {/*  ROTA INICIAL CORRIGIDA */}
+        {/* ROTA INICIAL */}
         <Route
           path="/"
           element={
-            usuario ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />
+            usuario
+              ? <Navigate to="/home" replace />
+              : <Navigate to="/login" replace />
           }
         />
 
         {/* PÚBLICAS */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* RESET PASSWORD (PÚBLICA) */}
+        <Route path="/reset" element={<ResetPassword />} />
 
         {/* ADMIN */}
         <Route
@@ -81,16 +98,14 @@ export default function App() {
           }
         />
 
-        {/* RESET PASSWORD */}
-        <Route
-          path="/reset"
-          element={<ResetPassword />}
-        />
-
-        {/*  ROTA que (EVITA BUG) */}
+        {/* FALLBACK INTELIGENTE */}
         <Route
           path="*"
-          element={<Navigate to="/" replace />}
+          element={
+            usuario
+              ? <Navigate to="/home" replace />
+              : <Navigate to="/login" replace />
+          }
         />
 
       </Routes>
