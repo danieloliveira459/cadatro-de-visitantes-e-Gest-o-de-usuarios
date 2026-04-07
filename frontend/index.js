@@ -26,7 +26,14 @@ app.use(
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:"],
       styleSrc: ["'self'", "'unsafe-inline'", "https:"],
       imgSrc: ["'self'", "data:", "https:"],
-      fontSrc: ["'self'", "data:", "https:", "https://use.typekit.net"],
+      fontSrc: [
+        "'self'",
+        "data:",
+        "https:",
+        "https://use.typekit.net",
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com"
+      ],
       connectSrc: ["'self'", "https:"],
     },
   })
