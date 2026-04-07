@@ -84,3 +84,51 @@ app.get("/api", (req, res) => {
 // =========================
 const frontendPath = path.join(__dirname, "../frontend/dist");
 
+if (fs.existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
+
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) {
+      return next();
+    }
+
+    const indexFile = path.join(frontendPath, "index.html");
+
+    if (fs.existsSync(indexFile)) {
+      res.sendFile(indexFile);
+    } else {
+      res.status(500).send("Frontend não encontrado");
+    }
+  });
+} else {
+  console.warn("⚠️ Pasta dist não encontrada. Frontend não será servido.");
+}
+
+// =========================
+// ❌ 404 SOMENTE API
+// =========================
+app.use("/api", (req, res) => {
+  res.status(404).json({
+    message: "Rota da API não encontrada",
+  });
+});
+
+// =========================
+// 🚀 START
+// =========================
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});
+
+// =========================
+// 🛡️ LOGS DE ERRO GLOBAIS
+// =========================
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection:", reason);
+});
