@@ -8,35 +8,52 @@ export default function ResetPassword() {
 
   const token = searchParams.get("token");
   const [novaSenha, setNovaSenha] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const redefinirSenha = async () => {
+    if (!token) {
+      return alert("Token inválido ou expirado.");
+    }
+
     if (!novaSenha) {
       return alert("Digite a nova senha");
     }
 
-    const API = import.meta.env.VITE_API_URL;
-    const res = await fetch(`${API}/auth/reset`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token, novaSenha }),
-    });
+    try {
+      setLoading(true);
 
-    const data = await res.json();
+      const API = import.meta.env.VITE_API_URL;
 
-    if (res.ok) {
-      alert("Senha redefinida com sucesso!");
-      navigate("/");
-    } else {
-      alert(data.erro);
+      const res = await fetch(`${API}/auth/reset`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token, novaSenha }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Senha redefinida com sucesso!");
+        navigate("/");
+      } else {
+        alert(data.erro || "Erro ao redefinir senha");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao conectar com o servidor");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}> <GiPadlock color="#e02020"/> Redefinir Senha</h2>
+        <h2 style={styles.title}>
+          <GiPadlock color="#e02020" /> Redefinir Senha
+        </h2>
 
         <p style={styles.subtitle}>
           Digite sua nova senha abaixo
@@ -50,8 +67,12 @@ export default function ResetPassword() {
           style={styles.input}
         />
 
-        <button onClick={redefinirSenha} style={styles.button}>
-          Redefinir Senha
+        <button
+          onClick={redefinirSenha}
+          style={styles.button}
+          disabled={loading}
+        >
+          {loading ? "Redefinindo..." : "Redefinir Senha"}
         </button>
       </div>
     </div>
@@ -63,20 +84,20 @@ const styles = {
     blockSize: "100vh",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   card: {
     background: "#fff",
     padding: "40px",
     borderRadius: "12px",
-    inlinesize: "350px",
+    inlineSize: "350px",
     textAlign: "center",
     boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
   },
 
   title: {
-    insetBlockStart: "10px",
+    insetBlockEnd: "10px",
     color: "#333",
   },
 
@@ -104,6 +125,5 @@ const styles = {
     borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "bold",
-    transition: "0.3s",
   },
 };
