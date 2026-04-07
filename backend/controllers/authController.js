@@ -2,14 +2,17 @@ import { db } from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import { Resend } from "resend";
 
 dotenv.config();
 
 const SECRET = process.env.JWT_SECRET || "segredo_super";
 
-//  ideal usar banco futuramente
+//  RESEND
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// ideal usar banco futuramente
 let tokens = [];
 // LOGIN
 export const login = async (req, res) => {
@@ -53,7 +56,7 @@ export const login = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log(" ERRO LOGIN:", err);
+    console.log("ERRO LOGIN:", err);
     return res.status(500).json({ erro: err.message });
   }
 };
@@ -75,29 +78,11 @@ export const register = async (req, res) => {
 
     return res.status(201).json({ msg: "Usuário criado" });
   } catch (err) {
-    console.log(" ERRO REGISTER:", err);
+    console.log("❌ ERRO REGISTER:", err);
     return res.status(500).json({ erro: err.message });
   }
 };
-// EMAIL TRANSPORTER 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  family: 4,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-//  DEBUG REAL
-transporter.verify((error) => {
-  if (error) {
-    console.log(" ERRO TRANSPORTER:", error);
-  } else {
-    console.log("EMAIL CONFIGURADO");
-  }
-});
-// FORGOT PASSWORD
+// FORGOT PASSWORD 
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -129,10 +114,11 @@ export const forgotPassword = async (req, res) => {
 
     const link = `${frontendURL}/reset?token=${token}`;
 
-    console.log(" LINK RESET:", link);
+    console.log("LINK RESET:", link);
 
-    await transporter.sendMail({
-      from: `"ADTAG Suporte" <${process.env.EMAIL_USER}>`,
+    // ENVIO COM RESEND
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
       to: email,
       subject: "Recuperação de senha",
       html: `
@@ -146,11 +132,10 @@ export const forgotPassword = async (req, res) => {
     return res.json({ msg: "Email enviado com sucesso" });
 
   } catch (err) {
-    //  AGORA VOCÊ VAI VER O ERRO REAL
-    console.log(" ERRO REAL EMAIL:", err);
+    console.log("ERRO EMAIL:", err);
 
     return res.status(500).json({
-      erro: err.message, 
+      erro: err.message,
     });
   }
 };
@@ -185,7 +170,7 @@ export const resetPassword = async (req, res) => {
 
     return res.json({ msg: "Senha atualizada com sucesso" });
   } catch (err) {
-    console.log(" ERRO RESET:", err);
+    console.log("❌ ERRO RESET:", err);
     return res.status(500).json({ erro: err.message });
   }
 };
@@ -205,8 +190,7 @@ export const getNivelByEmail = async (req, res) => {
 
     return res.json({ nivel: rows[0].nivel });
   } catch (err) {
-    console.log(" ERRO NIVEL:", err);
+    console.log("ERRO NIVEL:", err);
     return res.status(500).json({ erro: err.message });
   }
 };
-//
