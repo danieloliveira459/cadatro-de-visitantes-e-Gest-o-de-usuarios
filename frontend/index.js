@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -14,6 +15,22 @@ const app = express();
 // Corrigir __dirname no ESModules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// =========================
+// 🛡️ HELMET (CSP)
+// =========================
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "data:", "https:", "https://use.typekit.net"],
+      connectSrc: ["'self'", "https:"],
+    },
+  })
+);
 
 // =========================
 // 🌐 CORS CONFIGURADO
