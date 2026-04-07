@@ -4,7 +4,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 
-// ROTAS
 import visitanteRoutes from "./routes/visitanteRoutes.js";
 import aceitaramJesusRoutes from "./routes/aceitaramJesusRoutes.js";
 import avisoRoutes from "./routes/avisoRoutes.js";
@@ -13,30 +12,12 @@ import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
 
-// __dirname (ESModules)
+// Corrigir __dirname no ESModules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // =========================
-// 🔐 SECURITY HEADERS (CSP)
-// =========================
-app.use((req, res, next) => {
-  res.setHeader(
-    "Content-Security-Policy",
-    `
-    default-src 'self' https: data: blob:;
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
-    style-src 'self' 'unsafe-inline' https:;
-    img-src 'self' https: data: blob:;
-    font-src 'self' https: data:;
-    connect-src 'self' https:;
-    `
-  );
-  next();
-});
-
-// =========================
-// 🌐 CORS (USANDO MIDDLEWARE)
+// 🌐 CORS CONFIGURADO
 // =========================
 const allowedOrigins = [
   "http://localhost:5173",
@@ -45,18 +26,15 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
+// Garante resposta ao preflight
+app.options("*", cors());
 
 // =========================
 // 🧩 MIDDLEWARE
@@ -76,7 +54,7 @@ app.use("/api/auth", authRoutes);
 // 🧪 TESTE API
 // =========================
 app.get("/api", (req, res) => {
-  res.json({ message: "API rodando com sucesso!" });
+  res.json({ message: "🚀 API rodando com sucesso!" });
 });
 
 // =========================
@@ -91,14 +69,7 @@ if (fs.existsSync(frontendPath)) {
     if (req.path.startsWith("/api")) {
       return next();
     }
-
-    const indexFile = path.join(frontendPath, "index.html");
-
-    if (fs.existsSync(indexFile)) {
-      res.sendFile(indexFile);
-    } else {
-      res.status(500).send("Frontend não encontrado");
-    }
+    res.sendFile(path.join(frontendPath, "index.html"));
   });
 } else {
   console.warn("⚠️ Pasta dist não encontrada. Frontend não será servido.");
@@ -108,9 +79,7 @@ if (fs.existsSync(frontendPath)) {
 // ❌ 404 SOMENTE API
 // =========================
 app.use("/api", (req, res) => {
-  res.status(404).json({
-    message: "Rota da API não encontrada",
-  });
+  res.status(404).json({ message: "Rota da API não encontrada" });
 });
 
 // =========================
@@ -119,7 +88,7 @@ app.use("/api", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`✅ Servidor rodando na porta ${PORT}`);
 });
 
 // =========================
@@ -129,6 +98,6 @@ process.on("uncaughtException", (err) => {
   console.error("❌ Uncaught Exception:", err);
 });
 
-process.on("unhandledRejection", (reason, promise) => {
+process.on("unhandledRejection", (reason) => {
   console.error("❌ Unhandled Rejection:", reason);
 });
