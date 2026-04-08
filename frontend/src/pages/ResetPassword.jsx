@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { GiPadlock } from "react-icons/gi";
 
+const API =
+  import.meta.env.VITE_API_URL ||
+  "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
+
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -9,36 +13,31 @@ export default function ResetPassword() {
   const token = searchParams.get("token");
 
   const [novaSenha, setNovaSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState("");
+  const [sucesso, setSucesso] = useState(false);
 
-  // 🔥 URL SEGURA (SEM BASE_URL, SEM ERRO)
-  const API =
-    import.meta.env.VITE_API_URL ||
-    "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
+  const validar = () => {
+    if (!novaSenha) return "Digite a nova senha.";
+    if (novaSenha.length < 6) return "A senha deve ter pelo menos 6 caracteres.";
+    if (novaSenha !== confirmarSenha) return "As senhas não coincidem.";
+    return null;
+  };
 
   const redefinirSenha = async () => {
     if (loading) return;
+    setErro("");
 
-    if (!token) {
-      return alert("Token inválido ou expirado.");
-    }
-
-    if (!novaSenha) {
-      return alert("Digite a nova senha");
-    }
-
-    if (novaSenha.length < 6) {
-      return alert("A senha deve ter pelo menos 6 caracteres");
-    }
+    const mensagemErro = validar();
+    if (mensagemErro) return setErro(mensagemErro);
 
     try {
       setLoading(true);
 
       const res = await fetch(`${API}/api/auth/reset`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, novaSenha }),
       });
 
@@ -49,50 +48,54 @@ export default function ResetPassword() {
         throw new Error("Resposta inválida do servidor.");
       }
 
-      if (!res.ok) {
-        throw new Error(data?.erro || "Erro ao redefinir senha");
-      }
+      if (!res.ok) throw new Error(data?.erro || "Erro ao redefinir senha.");
 
-      alert("Senha redefinida com sucesso!");
-      navigate("/");
+      setSucesso(true);
+      setTimeout(() => navigate("/"), 2500);
     } catch (err) {
       console.error("Erro:", err.message);
-      alert(err.message || "Erro ao conectar com o servidor");
+      setErro(err.message || "Erro ao conectar com o servidor.");
     } finally {
       setLoading(false);
     }
   };
 
+  // — Token inválido —
   if (!token) {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
-          <h2 style={{ ...styles.title, color: "#e02020" }}>
-            <GiPadlock color="#e02020" /> Link inválido
-          </h2>
-
-          <p style={styles.subtitle}>
-            Esse link expirou ou não é válido.
-          </p>
-
+          <GiPadlock size={40} color="#e02020" />
+          <h2 style={{ ...styles.title, color: "#e02020" }}>Link inválido</h2>
+          <p style={styles.subtitle}>Esse link expirou ou não é válido.</p>
           <button style={styles.button} onClick={() => navigate("/")}>
-            Voltar
+            Voltar ao início
           </button>
         </div>
       </div>
     );
   }
 
+  // — Sucesso —
+  if (sucesso) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <div style={styles.successIcon}>✓</div>
+          <h2 style={{ ...styles.title, color: "#16a34a" }}>Senha redefinida!</h2>
+          <p style={styles.subtitle}>Redirecionando para o login...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // — Formulário —
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>
-          <GiPadlock color="#e02020" /> Redefinir Senha
-        </h2>
-
-        <p style={styles.subtitle}>
-          Digite sua nova senha abaixo
-        </p>
+        <GiPadlock size={40} color="#e02020" />
+        <h2 style={styles.title}>Redefinir Senha</h2>
+        <p style={styles.subtitle}>Digite e confirme sua nova senha abaixo</p>
 
         <input
           type="password"
@@ -101,7 +104,21 @@ export default function ResetPassword() {
           onChange={(e) => setNovaSenha(e.target.value)}
           style={styles.input}
           disabled={loading}
+          autoComplete="new-password"
         />
+
+        <input
+          type="password"
+          placeholder="Confirmar nova senha"
+          value={confirmarSenha}
+          onChange={(e) => setConfirmarSenha(e.target.value)}
+          style={styles.input}
+          disabled={loading}
+          autoComplete="new-password"
+          onKeyDown={(e) => e.key === "Enter" && redefinirSenha()}
+        />
+
+        {erro && <p style={styles.erro}>{erro}</p>}
 
         <button
           onClick={redefinirSenha}
@@ -134,20 +151,25 @@ const styles = {
     width: "350px",
     textAlign: "center",
     boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "4px",
   },
   title: {
-    marginBottom: "10px",
+    margin: "8px 0 4px",
     color: "#333",
+    fontSize: "20px",
   },
   subtitle: {
-    marginBottom: "20px",
+    marginBottom: "12px",
     color: "#555",
     fontSize: "14px",
   },
   input: {
     width: "100%",
     padding: "12px",
-    marginBottom: "20px",
+    marginBottom: "12px",
     borderRadius: "8px",
     border: "1px solid #ccc",
     fontSize: "14px",
@@ -162,5 +184,24 @@ const styles = {
     borderRadius: "8px",
     fontWeight: "bold",
     fontSize: "14px",
+    marginTop: "4px",
+  },
+  erro: {
+    color: "#e02020",
+    fontSize: "13px",
+    marginBottom: "8px",
+    width: "100%",
+    textAlign: "left",
+  },
+  successIcon: {
+    width: "56px",
+    height: "56px",
+    borderRadius: "50%",
+    background: "#dcfce7",
+    color: "#16a34a",
+    fontSize: "28px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
 };
