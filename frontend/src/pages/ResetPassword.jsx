@@ -2,9 +2,6 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { GiPadlock } from "react-icons/gi";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
-const API_URL = `${BASE_URL}/api`;
-
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -13,6 +10,11 @@ export default function ResetPassword() {
 
   const [novaSenha, setNovaSenha] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // 🔥 URL SEGURA (SEM BASE_URL, SEM ERRO)
+  const API =
+    import.meta.env.VITE_API_URL ||
+    "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
 
   const redefinirSenha = async () => {
     if (loading) return;
@@ -32,7 +34,7 @@ export default function ResetPassword() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${BASE_URL}/api/auth/reset`, {
+      const res = await fetch(`${API}/api/auth/reset`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,11 +42,10 @@ export default function ResetPassword() {
         body: JSON.stringify({ token, novaSenha }),
       });
 
-      // 🔥 proteção contra resposta HTML/erro de servidor
       let data;
       try {
         data = await res.json();
-      } catch (err) {
+      } catch {
         throw new Error("Resposta inválida do servidor.");
       }
 
