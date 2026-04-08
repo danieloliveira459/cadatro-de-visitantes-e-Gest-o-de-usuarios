@@ -7,17 +7,35 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   const token = searchParams.get("token");
+
   const [novaSenha, setNovaSenha] = useState("");
   const [loading, setLoading] = useState(false);
 
   const redefinirSenha = async () => {
-    if (!token) return alert("Token inválido ou expirado.");
-    if (!novaSenha) return alert("Digite a nova senha");
+    if (loading) return; // evita múltiplos cliques
+
+    if (!token) {
+      return alert("Token inválido ou expirado.");
+    }
+
+    if (!novaSenha) {
+      return alert("Digite a nova senha");
+    }
+
+    if (novaSenha.length < 6) {
+      return alert("A senha deve ter pelo menos 6 caracteres");
+    }
 
     try {
       setLoading(true);
 
       const API = import.meta.env.VITE_API_URL;
+
+      //  valida se variável existe
+      if (!API) {
+        console.error("VITE_API_URL não definida!");
+        return alert("Erro de configuração do sistema.");
+      }
 
       const res = await fetch(`${API}/auth/reset`, {
         method: "POST",
@@ -25,21 +43,47 @@ export default function ResetPassword() {
         body: JSON.stringify({ token, novaSenha }),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        alert("Senha redefinida com sucesso!");
-        navigate("/");
-      } else {
-        alert(data.erro || "Erro ao redefinir senha");
+      //  proteção contra resposta inválida (HTML, etc)
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Resposta inválida do servidor.");
       }
+
+      if (!res.ok) {
+        throw new Error(data.erro || "Erro ao redefinir senha");
+      }
+
+      alert("Senha redefinida com sucesso!");
+      navigate("/");
+
     } catch (err) {
-      console.error(err);
-      alert("Erro ao conectar com o servidor");
+      console.error("Erro:", err.message);
+      alert(err.message || "Erro ao conectar com o servidor");
     } finally {
       setLoading(false);
     }
   };
+
+  //  caso não tenha token na URL
+  if (!token) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <h2 style={{ ...styles.title, color: "#e02020" }}>
+            <GiPadlock color="#e02020" /> Link inválido
+          </h2>
+          <p style={styles.subtitle}>
+            Esse link expirou ou não é válido.
+          </p>
+          <button style={styles.button} onClick={() => navigate("/")}>
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -56,11 +100,16 @@ export default function ResetPassword() {
           value={novaSenha}
           onChange={(e) => setNovaSenha(e.target.value)}
           style={styles.input}
+          disabled={loading}
         />
 
         <button
           onClick={redefinirSenha}
-          style={styles.button}
+          style={{
+            ...styles.button,
+            opacity: loading ? 0.7 : 1,
+            cursor: loading ? "not-allowed" : "pointer",
+          }}
           disabled={loading}
         >
           {loading ? "Redefinindo..." : "Redefinir Senha"}
@@ -72,7 +121,7 @@ export default function ResetPassword() {
 
 const styles = {
   container: {
-    height: "100vh",           
+    height: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -83,40 +132,39 @@ const styles = {
     background: "#fff",
     padding: "40px",
     borderRadius: "12px",
-    width: "350px",            
+    width: "350px",
     textAlign: "center",
     boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
   },
 
   title: {
-    marginBottom: "10px",     
+    marginBottom: "10px",
     color: "#333",
   },
 
   subtitle: {
-    marginBottom: "20px",     
+    marginBottom: "20px",
     color: "#555",
     fontSize: "14px",
   },
 
   input: {
-    width: "100%",           
+    width: "100%",
     padding: "12px",
-    marginBottom: "20px",    
+    marginBottom: "20px",
     borderRadius: "8px",
     border: "1px solid #ccc",
     fontSize: "14px",
-    boxSizing: "border-box",  
+    boxSizing: "border-box",
   },
 
   button: {
-    width: "100%",            
+    width: "100%",
     padding: "12px",
     background: "#e02020",
     color: "#fff",
     border: "none",
     borderRadius: "8px",
-    cursor: "pointer",
     fontWeight: "bold",
     fontSize: "14px",
   },
