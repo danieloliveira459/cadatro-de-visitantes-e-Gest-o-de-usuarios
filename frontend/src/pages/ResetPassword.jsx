@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { GiPadlock } from "react-icons/gi";
 
-const API_URL = import.meta.env.VITE_API_URL || 
+const API_URL =
+  import.meta.env.VITE_API_URL ||
   "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
 
 export default function ResetPassword() {
@@ -10,30 +11,47 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   const token = searchParams.get("token");
+
   const [novaSenha, setNovaSenha] = useState("");
   const [loading, setLoading] = useState(false);
 
   const redefinirSenha = async () => {
     if (loading) return;
 
-    if (!token) return alert("Token inválido ou expirado.");
-    if (!novaSenha) return alert("Digite a nova senha");
-    if (novaSenha.length < 6) return alert("A senha deve ter pelo menos 6 caracteres");
+    if (!token) {
+      return alert("Token inválido ou expirado.");
+    }
+
+    if (!novaSenha) {
+      return alert("Digite a nova senha");
+    }
+
+    if (novaSenha.length < 6) {
+      return alert("A senha deve ter pelo menos 6 caracteres");
+    }
 
     try {
       setLoading(true);
 
       const res = await fetch(`${API_URL}/api/auth/reset`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ token, novaSenha }),
       });
 
-      const data = await res.json().catch(() => {
+      // 🔥 proteção contra resposta HTML/erro de servidor
+      let data;
+      try {
+        data = await res.json();
+      } catch (err) {
         throw new Error("Resposta inválida do servidor.");
-      });
+      }
 
-      if (!res.ok) throw new Error(data.erro || "Erro ao redefinir senha");
+      if (!res.ok) {
+        throw new Error(data?.erro || "Erro ao redefinir senha");
+      }
 
       alert("Senha redefinida com sucesso!");
       navigate("/");
@@ -52,7 +70,11 @@ export default function ResetPassword() {
           <h2 style={{ ...styles.title, color: "#e02020" }}>
             <GiPadlock color="#e02020" /> Link inválido
           </h2>
-          <p style={styles.subtitle}>Esse link expirou ou não é válido.</p>
+
+          <p style={styles.subtitle}>
+            Esse link expirou ou não é válido.
+          </p>
+
           <button style={styles.button} onClick={() => navigate("/")}>
             Voltar
           </button>
@@ -67,7 +89,10 @@ export default function ResetPassword() {
         <h2 style={styles.title}>
           <GiPadlock color="#e02020" /> Redefinir Senha
         </h2>
-        <p style={styles.subtitle}>Digite sua nova senha abaixo</p>
+
+        <p style={styles.subtitle}>
+          Digite sua nova senha abaixo
+        </p>
 
         <input
           type="password"
