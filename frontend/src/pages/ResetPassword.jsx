@@ -2,9 +2,12 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { GiPadlock } from "react-icons/gi";
 
-const API =
+// ✅ BASE_URL seguro (igual ao Login)
+const BASE_URL =
   import.meta.env.VITE_API_URL ||
   "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
+
+const API = `${BASE_URL}/api/auth`;
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -35,7 +38,8 @@ export default function ResetPassword() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${API}/api/auth/reset`, {
+      // ✅ USANDO API CORRETA (sem BASE_URL perdido)
+      const res = await fetch(`${API}/reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, novaSenha }),
@@ -60,7 +64,7 @@ export default function ResetPassword() {
     }
   };
 
-  // — Token inválido —
+  // ❌ Token inválido
   if (!token) {
     return (
       <div style={styles.container}>
@@ -76,26 +80,30 @@ export default function ResetPassword() {
     );
   }
 
-  // — Sucesso —
+  // ✅ Sucesso
   if (sucesso) {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
           <div style={styles.successIcon}>✓</div>
-          <h2 style={{ ...styles.title, color: "#16a34a" }}>Senha redefinida!</h2>
-          <p style={styles.subtitle}>Redirecionando para o login...</p>
+          <h2 style={{ ...styles.title, color: "#16a34a" }}>
+            Senha redefinida!
+          </h2>
+          <p style={styles.subtitle}>Redirecionando...</p>
         </div>
       </div>
     );
   }
 
-  // — Formulário —
+  // 🧾 Formulário
   return (
     <div style={styles.container}>
       <div style={styles.card}>
         <GiPadlock size={40} color="#e02020" />
         <h2 style={styles.title}>Redefinir Senha</h2>
-        <p style={styles.subtitle}>Digite e confirme sua nova senha abaixo</p>
+        <p style={styles.subtitle}>
+          Digite e confirme sua nova senha abaixo
+        </p>
 
         <input
           type="password"
@@ -104,7 +112,6 @@ export default function ResetPassword() {
           onChange={(e) => setNovaSenha(e.target.value)}
           style={styles.input}
           disabled={loading}
-          autoComplete="new-password"
         />
 
         <input
@@ -114,7 +121,6 @@ export default function ResetPassword() {
           onChange={(e) => setConfirmarSenha(e.target.value)}
           style={styles.input}
           disabled={loading}
-          autoComplete="new-password"
           onKeyDown={(e) => e.key === "Enter" && redefinirSenha()}
         />
 
@@ -122,11 +128,7 @@ export default function ResetPassword() {
 
         <button
           onClick={redefinirSenha}
-          style={{
-            ...styles.button,
-            opacity: loading ? 0.7 : 1,
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
+          style={styles.button}
           disabled={loading}
         >
           {loading ? "Redefinindo..." : "Redefinir Senha"}
@@ -151,29 +153,20 @@ const styles = {
     width: "350px",
     textAlign: "center",
     boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "4px",
   },
   title: {
-    margin: "8px 0 4px",
-    color: "#333",
-    fontSize: "20px",
+    margin: "10px 0",
   },
   subtitle: {
-    marginBottom: "12px",
-    color: "#555",
+    marginBottom: "15px",
     fontSize: "14px",
   },
   input: {
     width: "100%",
     padding: "12px",
-    marginBottom: "12px",
+    marginBottom: "10px",
     borderRadius: "8px",
     border: "1px solid #ccc",
-    fontSize: "14px",
-    boxSizing: "border-box",
   },
   button: {
     width: "100%",
@@ -183,25 +176,13 @@ const styles = {
     border: "none",
     borderRadius: "8px",
     fontWeight: "bold",
-    fontSize: "14px",
-    marginTop: "4px",
   },
   erro: {
-    color: "#e02020",
+    color: "red",
     fontSize: "13px",
-    marginBottom: "8px",
-    width: "100%",
-    textAlign: "left",
   },
   successIcon: {
-    width: "56px",
-    height: "56px",
-    borderRadius: "50%",
-    background: "#dcfce7",
-    color: "#16a34a",
-    fontSize: "28px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    fontSize: "30px",
+    color: "green",
   },
 };
