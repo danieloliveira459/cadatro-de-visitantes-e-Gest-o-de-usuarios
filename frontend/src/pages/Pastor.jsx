@@ -422,6 +422,11 @@ return (
                   {v.data
                     ? new Date(v.data).toLocaleString("pt-BR", {
                         timeZone: "America/Sao_Paulo",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })
                     : "-"}
                 </td>
@@ -491,6 +496,11 @@ return (
                 {a.data
                   ? new Date(a.data).toLocaleString("pt-BR", {
                       timeZone: "America/Sao_Paulo",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })
                   : "-"}
               </td>
@@ -511,7 +521,6 @@ return (
 {/* PROGRAMAÇÃO */}
 {aba === "programacao" && (
   <div className="avisos-grid">
-
     <div className="card">
       <h3><FaCalendarAlt color="#e02020"/> Novo Evento</h3>
 
@@ -556,7 +565,7 @@ return (
             <th>Ações</th>
           </tr>
         </thead>
-        <tbody></tbody>
+
         <tbody>
           {programacoes.map((p) => (
             <tr key={p.id}>
@@ -567,6 +576,11 @@ return (
                 {p.data
                   ? new Date(p.data).toLocaleString("pt-BR", {
                       timeZone: "America/Sao_Paulo",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })
                   : "-"}
               </td>
