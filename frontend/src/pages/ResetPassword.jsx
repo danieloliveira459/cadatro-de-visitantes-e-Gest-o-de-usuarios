@@ -2,9 +2,8 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { GiPadlock } from "react-icons/gi";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
+const BASE_URL = import.meta.env.VITE_API_URL || "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
+const API_URL = `${BASE_URL}/api`;
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -33,7 +32,7 @@ export default function ResetPassword() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${APIL}/api/auth/reset`, {
+      const res = await fetch(`${BASE_URL}/api/auth/reset`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
