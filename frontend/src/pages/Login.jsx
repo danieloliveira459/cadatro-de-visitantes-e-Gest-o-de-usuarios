@@ -4,13 +4,16 @@ import { TbUserShare } from "react-icons/tb";
 import "./Login.css";
 import logo from "../assets/adtag.png";
 
-// ✅ GARANTE URL
-const BASE_URL = import.meta.env.VITE_API_URL || "";
+// ✅ BASE_URL seguro (NUNCA vazio)
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
 
-if (!BASE_URL) {
-  console.error("❌ VITE_API_URL não definida!");
+if (!import.meta.env.VITE_API_URL) {
+  console.warn("⚠️ VITE_API_URL não definida. Usando fallback.");
 }
 
+// ✅ API organizada
 const API = `${BASE_URL}/api/auth`;
 
 export default function Login() {
@@ -32,7 +35,7 @@ export default function Login() {
   const [loadingNivel, setLoadingNivel] = useState(false);
   const [checkedAuth, setCheckedAuth] = useState(false);
 
-  // ✅ FUNÇÃO FETCH SEGURA (com timeout)
+  // ✅ FETCH COM TIMEOUT
   const fetchComTimeout = async (url, options = {}, timeout = 8000) => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
@@ -221,7 +224,6 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-
         <h1 className="logo-title">
           <img
             src={logo}
@@ -246,11 +248,14 @@ export default function Login() {
             required
           />
 
-          {loadingNivel && <p style={{ fontSize: "12px" }}>Verificando nível...</p>}
+          {loadingNivel && (
+            <p style={{ fontSize: "12px" }}>Verificando nível...</p>
+          )}
 
           {nivelUsuario && !loadingNivel && (
             <p style={{ color: "#e02020" }}>
-              <TbUserShare /> <strong>{formatarNivel(nivelUsuario)}</strong>
+              <TbUserShare />{" "}
+              <strong>{formatarNivel(nivelUsuario)}</strong>
             </p>
           )}
 
@@ -301,7 +306,10 @@ export default function Login() {
               onChange={(e) => setSenhaCad(e.target.value)}
             />
 
-            <select value={nivel} onChange={(e) => setNivel(e.target.value)}>
+            <select
+              value={nivel}
+              onChange={(e) => setNivel(e.target.value)}
+            >
               <option value="USER">Usuário</option>
               <option value="PASTOR">Pastor</option>
               <option value="VICE">Vice</option>
@@ -318,5 +326,3 @@ export default function Login() {
     </div>
   );
 }
-
-//
