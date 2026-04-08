@@ -33,7 +33,7 @@ export default function ResetPassword() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${API_URL}/api/auth/reset`, {
+      const res = await fetch(`${APIL}/api/auth/reset`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
