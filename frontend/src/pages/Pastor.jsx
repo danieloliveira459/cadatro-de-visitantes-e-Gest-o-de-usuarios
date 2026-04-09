@@ -67,119 +67,122 @@ export default function Pastor() {
     }
   }
   // VISITANTES
-  const adicionarVisitante = async () => {
-    if (!nome || !telefone) return alert("Preencha os campos!");
+const adicionarVisitante = async () => {
+  if (!nome || !telefone) return alert("Preencha os campos!");
 
-    await fetch(`${API}/visitantes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nome,
-        cargo: "Visitante",
-        telefone,
-        igreja: endereco,
-        data: new Date().toISOString(),
-        observacoes,
-      }),
+  await fetch(`${API}/visitantes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nome,
+      cargo: "Visitante",
+      telefone,
+      igreja: endereco,
+      observacoes,
+      // ✅ data removida — backend usa NOW() com timezone correto
+    }),
+  });
+
+  await carregarTudo();
+
+  setNome("");
+  setTelefone("");
+  setEndereco("");
+  setObservacoes("");
+};
+
+const handleDeleteVisitante = async (id) => {
+  const confirmar = window.confirm("Deseja excluir este visitante?");
+  if (!confirmar) return;
+
+  try {
+    await fetch(`${API}/visitantes/${id}`, {
+      method: "DELETE",
     });
 
     await carregarTudo();
+  } catch (err) {
+    console.log("Erro ao deletar visitante:", err);
+  }
+};
 
-    setNome("");
-    setTelefone("");
-    setEndereco("");
-    setObservacoes("");
-  };
+// AVISOS
+const adicionarAviso = async () => {
+  if (!titulo || !descricao) return alert("Preencha os campos!");
 
-  const handleDeleteVisitante = async (id) => {
-    const confirmar = window.confirm("Deseja excluir este visitante?");
-    if (!confirmar) return;
+  await fetch(`${API}/avisos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      titulo,
+      descricao,
+      // ✅ data também não precisa vir do frontend
+    }),
+  });
 
-    try {
-      await fetch(`${API}/visitantes/${id}`, {
-        method: "DELETE",
-      });
+  setTitulo("");
+  setDescricao("");
 
-      await carregarTudo();
-    } catch (err) {
-      console.log("Erro ao deletar visitante:", err);
-    }
-  };
-  // AVISOS
+  await carregarTudo();
+};
 
-  const adicionarAviso = async () => {
-    if (!titulo || !descricao) return alert("Preencha os campos!");
+const handleDeleteAviso = async (id) => {
+  const confirmar = window.confirm("Deseja excluir este aviso?");
+  if (!confirmar) return;
 
-    await fetch(`${API}/avisos`, {
+  try {
+    await fetch(`${API}/avisos/${id}`, {
+      method: "DELETE",
+    });
+
+    await carregarTudo();
+  } catch (err) {
+    console.log("Erro ao deletar aviso:", err);
+  }
+};
+
+// PROGRAMAÇÃO
+const adicionarProgramacao = async () => {
+  if (!dia || !horario || !atividade) return;
+
+  try {
+    await fetch(`${API}/programacoes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        titulo,
-        descricao,
+        dia,
+        horario,
+        atividade,
+        responsavel,
+        // ✅ data também não precisa vir do frontend
       }),
     });
 
-    setTitulo("");
-    setDescricao("");
+    setDia("");
+    setHorario("");
+    setAtividade("");
+    setResponsavel("");
 
     await carregarTudo();
-  };
+  } catch (err) {
+    console.log("Erro programação:", err);
+  }
+};
 
-  const handleDeleteAviso = async (id) => {
-    const confirmar = window.confirm("Deseja excluir este aviso?");
-    if (!confirmar) return;
+const handleDeleteProgramacao = async (id) => {
+  const confirmar = window.confirm("Deseja excluir esta programação?");
+  if (!confirmar) return;
 
-    try {
-      await fetch(`${API}/avisos/${id}`, {
-        method: "DELETE",
-      });
+  try {
+    await fetch(`${API}/programacoes/${id}`, {
+      method: "DELETE",
+    });
 
-      await carregarTudo();
-    } catch (err) {
-      console.log("Erro ao deletar aviso:", err);
-    }
-  };
-  // PROGRAMAÇÃO
-  const adicionarProgramacao = async () => {
-    if (!dia || !horario || !atividade) return;
-
-    try {
-      await fetch(`${API}/programacoes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          dia,
-          horario,
-          atividade,
-          responsavel,
-        }),
-      });
-
-      setDia("");
-      setHorario("");
-      setAtividade("");
-      setResponsavel("");
-
-      await carregarTudo();
-    } catch (err) {
-      console.log("Erro programação:", err);
-    }
-  };
-
-  const handleDeleteProgramacao = async (id) => {
-    const confirmar = window.confirm("Deseja excluir esta programação?");
-    if (!confirmar) return;
-
-    try {
-      await fetch(`${API}/programacoes/${id}`, {
-        method: "DELETE",
-      });
-
-      await carregarTudo();
-    } catch (err) {
-      console.log("Erro ao deletar programação:", err);
-    }
-  };
+    await carregarTudo();
+  } catch (err) {
+    console.log("Erro ao deletar programação:", err);
+  }
+};
   // ACEITARAM JESUS
   const adicionarAceitouJesus = async () => {
     if (!nome) return alert("Nome obrigatório!");

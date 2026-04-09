@@ -11,6 +11,7 @@ export default function FormCard() {
   const [funcao, setFuncao] = useState("");
   const [telefone, setTelefone] = useState("");
   const [igreja, setIgreja] = useState("");
+  const [aceitouJesus, setAceitouJesus] = useState(null); // null = não selecionado
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -18,6 +19,11 @@ export default function FormCard() {
 
     if (!nome.trim() || !funcao.trim() || !telefone.trim() || !igreja.trim()) {
       alert("Preencha todos os campos!");
+      return;
+    }
+
+    if (aceitouJesus === null) {
+      alert("Selecione se o visitante já aceitou Jesus!");
       return;
     }
 
@@ -34,7 +40,7 @@ export default function FormCard() {
           funcao,
           telefone,
           igreja,
-          data: new Date().toISOString(),
+          aceitou_jesus: aceitouJesus,
         }),
       });
 
@@ -44,17 +50,20 @@ export default function FormCard() {
         throw new Error("Erro ao salvar no banco");
       }
 
-      alert("Visitante cadastrado com sucesso!");
-
       setNome("");
       setFuncao("");
       setTelefone("");
       setIgreja("");
+      setAceitouJesus(null);
 
-      //  AVISA O PAINEL DO PASTOR PARA ATUALIZAR A LISTA
       window.dispatchEvent(new Event("visitantesAtualizados"));
 
-      navigate("/pastor");
+      // ✅ Redireciona conforme a resposta
+      if (aceitouJesus === true) {
+        navigate("/aceitou-jesus"); // troque pela rota correta
+      } else {
+        navigate("/pastor");
+      }
     } catch (error) {
       console.error(error);
       alert("Erro ao cadastrar visitante");
@@ -98,6 +107,32 @@ export default function FormCard() {
           value={igreja}
           onChange={(e) => setIgreja(e.target.value)}
         />
+
+        {/* ✅ Checkbox Aceitou Jesus */}
+        <label style={{ marginTop: "12px" }}>Já aceitou Jesus?</label>
+        <div style={{ display: "flex", gap: "16px", marginTop: "6px" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+            <input
+              type="radio"
+              name="aceitouJesus"
+              value="sim"
+              checked={aceitouJesus === true}
+              onChange={() => setAceitouJesus(true)}
+            />
+            Sim
+          </label>
+
+          <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+            <input
+              type="radio"
+              name="aceitouJesus"
+              value="nao"
+              checked={aceitouJesus === false}
+              onChange={() => setAceitouJesus(false)}
+            />
+            Não
+          </label>
+        </div>
 
         <button className="btn-submit" type="submit" disabled={loading}>
           {loading ? "Cadastrando..." : "Cadastrar Visitante"}
