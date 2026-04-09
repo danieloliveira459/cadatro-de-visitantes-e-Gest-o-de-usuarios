@@ -35,7 +35,7 @@ app.options("*", cors());
 app.use(express.json());
 //  ROTAS API
 app.use("/api/visitantes", visitanteRoutes);
-app.use("/api/aceitaram-jesus", aceitaramJesusRoutes);
+app.use("/api/aceitaramJesus", aceitaramJesusRoutes);
 app.use("/api/avisos", avisoRoutes);
 app.use("/api/programacoes", programacaoRoutes);
 app.use("/api/auth", authRoutes);
