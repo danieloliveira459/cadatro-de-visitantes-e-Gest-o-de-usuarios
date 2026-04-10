@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // =======================
-// 🔐 CSP (CORREÇÃO DO ERRO DE FONTES)
+// 🔐 CSP (CORRIGIDO)
 // =======================
 app.use((req, res, next) => {
   res.setHeader(
@@ -28,14 +28,14 @@ app.use((req, res, next) => {
     style-src 'self' 'unsafe-inline';
     img-src 'self' data:;
     font-src 'self' data: https://use.typekit.net;
-    connect-src 'self' https://cadatro-de-visitantes-e-gest-o-de.onrender.com;
+    connect-src 'self' https://cadatro-de-visitantes-e-gest-o-de.onrender.com https://cadatro-de-visitantes-e-gest-o-de-ukhv.onrender.com;
     `
   );
   next();
 });
 
 // =======================
-// 🌍 CORS CONFIGURADO
+// 🌍 CORS CONFIGURADO (CORRIGIDO)
 // =======================
 const allowedOrigins = [
   "http://localhost:5173",
@@ -43,14 +43,42 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // permite postman / server-to-server
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("CORS bloqueado: " + origin));
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
 
-app.options("*", cors(corsOptions));
+// 🔥 IMPORTANTE: middleware manual para garantir preflight
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+// aplicar CORS
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // =======================
 // 📦 MIDDLEWARE
