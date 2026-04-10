@@ -30,7 +30,7 @@ export default function FormCard() {
     try {
       setLoading(true);
 
-      // ✅ Sempre salva na tabela de visitantes
+      //  Sempre salva na tabela de visitantes
       const response = await fetch(`${API}/api/visitantes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -45,7 +45,7 @@ export default function FormCard() {
 
       if (!response.ok) throw new Error("Erro ao salvar visitante");
 
-      // ✅ Se aceitou Jesus, salva também na tabela aceitaram_jesus
+      //  Se aceitou Jesus, salva também na tabela aceitaram_jesus
       if (aceitouJesus === true) {
         const responseJesus = await fetch(`${API}/api/aceitaram-jesus`, {
           method: "POST",
@@ -69,7 +69,7 @@ export default function FormCard() {
 
       window.dispatchEvent(new Event("visitantesAtualizados"));
 
-      // ✅ Redireciona conforme escolha
+      //  Redireciona conforme escolha
       if (aceitouJesus === true) {
         navigate("/aceitou-jesus"); // troque pela rota correta
       } else {
@@ -119,7 +119,7 @@ export default function FormCard() {
           onChange={(e) => setIgreja(e.target.value)}
         />
 
-        {/* ✅ Radio Aceitou Jesus */}
+        {/*  Radio Aceitou Jesus */}
         <label style={{ marginTop: "12px" }}>Já aceitou Jesus?</label>
         <div style={{ display: "flex", gap: "16px", marginTop: "6px" }}>
           <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
