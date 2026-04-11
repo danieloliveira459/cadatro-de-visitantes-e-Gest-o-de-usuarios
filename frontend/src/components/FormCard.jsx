@@ -30,37 +30,38 @@ export default function FormCard() {
     try {
       setLoading(true);
 
-      //  Sempre salva na tabela de visitantes
-      const response = await fetch(`${API}/api/visitantes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome,
-          funcao,
-          telefone,
-          igreja,
-          aceitou_jesus: aceitouJesus,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Erro ao salvar visitante");
-
-      //  Se aceitou Jesus, salva também na tabela aceitaram_jesus
       if (aceitouJesus === true) {
+        // Salva APENAS em aceitaram-jesus
         const responseJesus = await fetch(`${API}/api/aceitaram-jesus`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nome,
             telefone,
-            endereco: igreja, // usa o campo igreja como endereço/origem
+            endereco: igreja,
             observacoes: `Função: ${funcao}`,
           }),
         });
 
         if (!responseJesus.ok) throw new Error("Erro ao salvar em aceitaram Jesus");
+
+      } else {
+        // Salva APENAS em visitantes
+        const response = await fetch(`${API}/api/visitantes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nome,
+            cargo: funcao,
+            telefone,
+            igreja,
+          }),
+        });
+
+        if (!response.ok) throw new Error("Erro ao salvar visitante");
       }
 
+      // Limpa os campos
       setNome("");
       setFuncao("");
       setTelefone("");
@@ -69,12 +70,13 @@ export default function FormCard() {
 
       window.dispatchEvent(new Event("visitantesAtualizados"));
 
-      //  Redireciona conforme escolha
+      // Redireciona conforme escolha
       if (aceitouJesus === true) {
-        navigate("/aceitou-jesus"); // troque pela rota correta
+        navigate("/pastor");
       } else {
         navigate("/pastor");
       }
+
     } catch (error) {
       console.error(error);
       alert("Erro ao cadastrar visitante");
@@ -119,7 +121,7 @@ export default function FormCard() {
           onChange={(e) => setIgreja(e.target.value)}
         />
 
-        {/*  Radio Aceitou Jesus */}
+        {/* Radio Aceitou Jesus */}
         <label style={{ marginTop: "12px" }}>Já aceitou Jesus?</label>
         <div style={{ display: "flex", gap: "16px", marginTop: "6px" }}>
           <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
@@ -129,7 +131,7 @@ export default function FormCard() {
               checked={aceitouJesus === true}
               onChange={() => setAceitouJesus(true)}
             />
-            Sim
+            Sim → vai para Aceitaram a Jesus
           </label>
 
           <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
@@ -139,12 +141,12 @@ export default function FormCard() {
               checked={aceitouJesus === false}
               onChange={() => setAceitouJesus(false)}
             />
-            Não
+            Não → vai para Visitantes
           </label>
         </div>
 
         <button className="btn-submit" type="submit" disabled={loading}>
-          {loading ? "Cadastrando..." : "Cadastrar Visitante"}
+          {loading ? "Cadastrando..." : "Cadastrar"}
         </button>
       </form>
     </div>
