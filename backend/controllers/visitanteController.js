@@ -20,9 +20,9 @@ export const listarVisitantes = async (req, res) => {
 // CRIAR
 export const criarVisitante = async (req, res) => {
   try {
-    let { nome, funcao, telefone, igreja } = req.body;
+    let { nome, funcao, telefone, igreja, aceitouJesus } = req.body;
 
-    // ✅ SOMENTE NOME OBRIGATÓRIO
+    //  SOMENTE NOME OBRIGATÓRIO
     if (!nome || nome.trim() === "") {
       return res.status(400).json({
         error: "Nome é obrigatório",
@@ -45,16 +45,17 @@ export const criarVisitante = async (req, res) => {
     });
 
     await db.query(
-      `INSERT INTO visitantes 
-      (nome, funcao, telefone, igreja, data) 
-      VALUES (?, ?, ?, ?, NOW())`,
-      [
-        nome,
-        funcao,
-        telefone,
-        igreja,
-      ]
-    );
+  `INSERT INTO visitantes 
+  (nome, funcao, telefone, igreja, aceitou_jesus, data) 
+  VALUES (?, ?, ?, ?, ?, NOW())`,
+  [
+    nome,
+    funcao || null,
+    telefone || null,
+    igreja || null,
+    aceitouJesus ? 1 : 0,
+  ]
+);
 
     return res.status(201).json({
       msg: "Visitante criado com sucesso",

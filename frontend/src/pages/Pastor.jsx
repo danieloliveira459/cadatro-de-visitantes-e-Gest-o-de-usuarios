@@ -363,35 +363,63 @@ export default function Pastor() {
                       <th>Ações</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {visitantes.map((v) => (
-                      <tr key={v.id}>
-                        <td>{v.nome}</td>
-                        <td>{v.cargo}</td>
-                        <td>{v.telefone}</td>
-                        <td>{v.igreja}</td>
-                        <td>{v.aceitouJesus ? "Sim" : "Não"}</td>
-                        <td>
-                          {v.data
-                            ? new Date(v.data).toLocaleString("pt-BR", {
-                                timeZone: "America/Sao_Paulo",
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : "-"}
-                        </td>
-                        <td style={{ textAlign: "center" }}>
-                          <FaTrash
-                            className="delete"
-                            onClick={() => handleDeleteVisitante(v.id)}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
+                 <tbody>
+  {visitantes.map((v) => (
+    <tr key={v.id}>
+      <td>{v.nome}</td>
+      <td>{v.funcao}</td>
+      <td>{v.telefone}</td>
+      <td>{v.igreja}</td>
+
+      {/* DATA */}
+      <td>
+        {v.data
+          ? new Date(v.data).toLocaleString("pt-BR", {
+              timeZone: "America/Sao_Paulo",
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "-"}
+      </td>
+
+      {/* RADIO BUTTON */}
+      <td>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <label>
+            <input
+              type="radio"
+              name={`aceitou-${v.id}`}
+              checked={v.aceitou_jesus === 1}
+              onChange={() => atualizarAceitou(v.id, true)}
+            />
+            Sim
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name={`aceitou-${v.id}`}
+              checked={v.aceitou_jesus === 0}
+              onChange={() => atualizarAceitou(v.id, false)}
+            />
+            Não
+          </label>
+        </div>
+      </td>
+
+      {/* AÇÕES */}
+      <td style={{ textAlign: "center" }}>
+        <FaTrash
+          className="delete"
+          onClick={() => handleDeleteVisitante(v.id)}
+        />
+      </td>
+    </tr>
+  ))}
+</tbody>
                 </table>
               )}
             </div>
