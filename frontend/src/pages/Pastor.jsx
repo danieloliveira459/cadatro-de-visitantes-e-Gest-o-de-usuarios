@@ -228,8 +228,8 @@ export default function Pastor() {
     let head = [];
 
     if (tipo === "visitantes") {
-      head = [["Nome", "Cargo", "Telefone", "Igreja", "Data"]];
-      tabela = visitantes.map((v) => [v.nome, v.cargo, v.telefone, v.igreja, v.data]);
+      head = [["Nome", "Cargo", "Telefone", "Igreja", "Data", "Aceitou Jesus"]];
+      tabela = visitantes.map((v) => [v.nome, v.cargo, v.telefone, v.igreja, v.data, v.aceitou_jesus ? "sim" : "não"]);
     }
 
     if (tipo === "avisos") {
