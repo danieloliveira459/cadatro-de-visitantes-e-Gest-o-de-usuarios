@@ -21,18 +21,18 @@ export default function Header() {
     usuario = null;
   }
 
-  // 🔒 PROTEÇÃO: se não estiver logado, redireciona
+  //  PROTEÇÃO: se não estiver logado, redireciona
   useEffect(() => {
     if (!usuario) {
       navigate("/login", { replace: true });
     }
   }, [usuario, navigate]);
 
-  // 🚪 LOGOUT CORRETO
+  //  LOGOUT CORRETO
   const handleLogout = () => {
     localStorage.removeItem("usuarioLogado");
 
-    // ✅ usar navigate (evita tela preta)
+    //  usar navigate (evita tela preta)
     navigate("/login", { replace: true });
   };
 
@@ -45,7 +45,7 @@ export default function Header() {
         style={{ cursor: "pointer" }}
       >
         <img src={adtagLogo} alt="ADTAG Logo" className="logo-img" />
-        <span className="logo-text">ADTAG</span>
+        <span className="logo-text ">ADTAG Expansão Setor "O"</span>
       </div>
 
       <h1 className="titulo">
