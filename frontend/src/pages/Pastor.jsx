@@ -33,9 +33,10 @@ export default function Pastor() {
   const [endereco, setEndereco] = useState("");
   const [observacoes, setObservacoes] = useState("");
 
+  // ✅ recarrega sempre que trocar de aba
   useEffect(() => {
     carregarTudo();
-  }, []);
+  }, [aba]);
 
   const carregarTudo = async () => {
     try {
@@ -176,9 +177,6 @@ export default function Pastor() {
 
       if (!res.ok) throw new Error("Erro ao salvar no banco");
 
-      const data = await res.json();
-      console.log("RESPOSTA DO BACKEND:", data);
-
       setNome("");
       setTelefone("");
       setEndereco("");
@@ -202,33 +200,33 @@ export default function Pastor() {
     }
   };
 
+  // ✅ URL corrigida — removido /api duplicado
   const atualizarAceitou = async (id, valor) => {
-  try {
-    const booleanValue = valor === true;
+    try {
+      const booleanValue = valor === true;
 
-    const res = await fetch(`${API}/api/visitantes/${id}/aceitou`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ aceitouJesus: booleanValue }),
-    });
+      const res = await fetch(`${API}/visitantes/${id}/aceitou`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aceitouJesus: booleanValue }),
+      });
 
-    if (!res.ok) {
-      const erro = await res.json();
-      console.error("Erro backend:", erro);
-      return;
+      if (!res.ok) {
+        const erro = await res.json();
+        console.error("Erro backend:", erro);
+        return;
+      }
+
+      setVisitantes((prev) =>
+        prev.map((v) =>
+          v.id === id ? { ...v, aceitou_jesus: booleanValue ? 1 : 0 } : v
+        )
+      );
+
+    } catch (error) {
+      console.error("Erro ao atualizar:", error);
     }
-
-    // atualiza tela sem reload
-    setVisitantes((prev) =>
-      prev.map((v) =>
-        v.id === id ? { ...v, aceitou_jesus: booleanValue ? 1 : 0 } : v
-      )
-    );
-
-  } catch (error) {
-    console.error("Erro ao atualizar:", error);
-  }
-};
+  };
 
   // PDF
   const gerarPDF = (tipo) => {
@@ -391,63 +389,61 @@ export default function Pastor() {
                       <th>Ações</th>
                     </tr>
                   </thead>
-                 <tbody>
-  {visitantes.map((v) => (
-    <tr key={v.id}>
-      <td>{v.nome}</td>
-      <td>{v.funcao}</td>
-      <td>{v.telefone}</td>
-      <td>{v.igreja}</td>
+                  <tbody>
+                    {visitantes.map((v) => (
+                      <tr key={v.id}>
+                        <td>{v.nome}</td>
+                        <td>{v.funcao}</td>
+                        <td>{v.telefone}</td>
+                        <td>{v.igreja}</td>
 
-      {/* DATA */}
-      <td>
-        {v.data
-          ? new Date(v.data).toLocaleString("pt-BR", {
-              timeZone: "America/Sao_Paulo",
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "-"}
-      </td>
+                        <td>
+                          {v.data
+                            ? new Date(v.data).toLocaleString("pt-BR", {
+                                timeZone: "America/Sao_Paulo",
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "-"}
+                        </td>
 
-      {/* RADIO BUTTON */}
-      <td>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <label>
-            <input
-              type="radio"
-              name={`aceitou-${v.id}`}
-              checked={v.aceitou_jesus === 1}
-              onChange={() => atualizarAceitou(v.id, true)}
-            />
-            Sim
-          </label>
+                        {/* ✅ checked corrigido para aceitar 0, 1, true, false */}
+                        <td>
+                          <div style={{ display: "flex", gap: "10px" }}>
+                            <label>
+                              <input
+                                type="radio"
+                                name={`aceitou-${v.id}`}
+                                checked={v.aceitou_jesus == 1}
+                                onChange={() => atualizarAceitou(v.id, true)}
+                              />
+                              Sim
+                            </label>
 
-          <label>
-            <input
-              type="radio"
-              name={`aceitou-${v.id}`}
-              checked={v.aceitou_jesus === 0}
-              onChange={() => atualizarAceitou(v.id, false)}
-            />
-            Não
-          </label>
-        </div>
-      </td>
+                            <label>
+                              <input
+                                type="radio"
+                                name={`aceitou-${v.id}`}
+                                checked={v.aceitou_jesus == 0 || v.aceitou_jesus === null}
+                                onChange={() => atualizarAceitou(v.id, false)}
+                              />
+                              Não
+                            </label>
+                          </div>
+                        </td>
 
-      {/* AÇÕES */}
-      <td style={{ textAlign: "center" }}>
-        <FaTrash
-          className="delete"
-          onClick={() => handleDeleteVisitante(v.id)}
-        />
-      </td>
-    </tr>
-  ))}
-</tbody>
+                        <td style={{ textAlign: "center" }}>
+                          <FaTrash
+                            className="delete"
+                            onClick={() => handleDeleteVisitante(v.id)}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
                 </table>
               )}
             </div>
