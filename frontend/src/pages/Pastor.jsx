@@ -204,18 +204,27 @@ export default function Pastor() {
 
   const atualizarAceitou = async (id, valor) => {
   try {
-    await fetch(`${API}/api/visitantes/${id}/aceitou`, {
+    const booleanValue = valor === true;
+
+    const res = await fetch(`${API}/api/visitantes/${id}/aceitou`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ aceitouJesus: valor }),
+      body: JSON.stringify({ aceitouJesus: booleanValue }),
     });
+
+    if (!res.ok) {
+      const erro = await res.json();
+      console.error("Erro backend:", erro);
+      return;
+    }
 
     // atualiza tela sem reload
     setVisitantes((prev) =>
       prev.map((v) =>
-        v.id === id ? { ...v, aceitou_jesus: valor ? 1 : 0 } : v
+        v.id === id ? { ...v, aceitou_jesus: booleanValue ? 1 : 0 } : v
       )
     );
+
   } catch (error) {
     console.error("Erro ao atualizar:", error);
   }

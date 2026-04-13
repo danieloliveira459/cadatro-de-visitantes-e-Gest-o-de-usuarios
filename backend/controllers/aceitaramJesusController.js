@@ -22,14 +22,14 @@ export const criarAceitou = async (req, res) => {
   try {
     let { nome, telefone, endereco, observacoes } = req.body;
 
-    // ✅ SOMENTE NOME OBRIGATÓRIO
+    // SOMENTE NOME OBRIGATÓRIO
     if (!nome || nome.trim() === "") {
       return res.status(400).json({
         error: "Nome é obrigatório",
       });
     }
 
-    // 🔥 LIMPEZA DOS DADOS
+    //  LIMPEZA DOS DADOS
     nome = nome.trim();
     endereco = endereco?.trim() || null;
     observacoes = observacoes?.trim() || null;
