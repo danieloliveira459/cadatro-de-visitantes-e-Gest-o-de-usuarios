@@ -359,6 +359,7 @@ export default function Pastor() {
                       <th>Telefone</th>
                       <th>Igreja</th>
                       <th>Data</th>
+                      <th>Aceitou jesus?</th>
                       <th>Ações</th>
                     </tr>
                   </thead>
@@ -369,6 +370,7 @@ export default function Pastor() {
                         <td>{v.cargo}</td>
                         <td>{v.telefone}</td>
                         <td>{v.igreja}</td>
+                        <td>{v.aceitouJesus ? "Sim" : "Não"}</td>
                         <td>
                           {v.data
                             ? new Date(v.data).toLocaleString("pt-BR", {
