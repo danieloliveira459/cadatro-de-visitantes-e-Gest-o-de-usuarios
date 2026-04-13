@@ -17,11 +17,13 @@ export default function FormCard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!nome.trim() || !funcao.trim() || !telefone.trim() || !igreja.trim()) {
-      alert("Preencha todos os campos!");
+    // ✅ SOMENTE NOME OBRIGATÓRIO
+    if (!nome.trim()) {
+      alert("O nome é obrigatório!");
       return;
     }
 
+    // ✅ (Opcional) manter obrigatório
     if (aceitouJesus === null) {
       alert("Selecione se o visitante já aceitou Jesus!");
       return;
@@ -37,9 +39,9 @@ export default function FormCard() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nome,
-            telefone,
-            endereco: igreja,
-            observacoes: `Função: ${funcao}`,
+            telefone: telefone || "",
+            endereco: igreja || "",
+            observacoes: funcao ? `Função: ${funcao}` : "",
           }),
         });
 
@@ -52,9 +54,9 @@ export default function FormCard() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nome,
-            cargo: funcao,
-            telefone,
-            igreja,
+            cargo: funcao || "",
+            telefone: telefone || "",
+            igreja: igreja || "",
           }),
         });
 
@@ -70,12 +72,8 @@ export default function FormCard() {
 
       window.dispatchEvent(new Event("visitantesAtualizados"));
 
-      // Redireciona conforme escolha
-      if (aceitouJesus === true) {
-        navigate("/pastor");
-      } else {
-        navigate("/pastor");
-      }
+      // Redireciona
+      navigate("/pastor");
 
     } catch (error) {
       console.error(error);
@@ -93,11 +91,12 @@ export default function FormCard() {
       </h2>
 
       <form onSubmit={handleSubmit}>
-        <label>Nome</label>
+        <label>Nome *</label>
         <input
           placeholder="Ex: Carlos"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
+          required
         />
 
         <label>Função/ND</label>
