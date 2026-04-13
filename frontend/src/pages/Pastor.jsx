@@ -200,7 +200,7 @@ export default function Pastor() {
     }
   };
 
-  // ✅ URL corrigida — removido /api duplicado
+  // URL corrigida — removido /api duplicado
   const atualizarAceitou = async (id, valor) => {
     try {
       const booleanValue = valor === true;
@@ -254,8 +254,8 @@ export default function Pastor() {
     let head = [];
 
     if (tipo === "visitantes") {
-      head = [["Nome", "Cargo", "Telefone", "Igreja", "Data", "Aceitou Jesus"]];
-      tabela = visitantes.map((v) => [v.nome, v.cargo, v.telefone, v.igreja, v.data, v.aceitou_jesus ? "sim" : "não"]);
+      head = [["Nome", "Cargo", "Telefone", "Igreja", "Aceitou Jesus", "Data"]];
+      tabela = visitantes.map((v) => [v.nome, v.cargo, v.telefone, v.igreja, v.aceitou_jesus ? "sim" : "não", v.data]);
     }
 
     if (tipo === "avisos") {

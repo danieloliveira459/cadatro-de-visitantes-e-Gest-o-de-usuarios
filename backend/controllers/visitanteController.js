@@ -22,14 +22,14 @@ export const criarVisitante = async (req, res) => {
   try {
     let { nome, funcao, telefone, igreja, aceitouJesus } = req.body;
 
-    // ✅ SOMENTE NOME OBRIGATÓRIO
+    //  SOMENTE NOME OBRIGATÓRIO
     if (!nome || nome.trim() === "") {
       return res.status(400).json({
         error: "Nome é obrigatório",
       });
     }
 
-    // 🔥 LIMPEZA DE DADOS
+    // LIMPEZA DE DADOS
     nome = nome.trim();
     funcao = funcao?.trim() || null;
     igreja = igreja?.trim() || null;
@@ -69,7 +69,7 @@ export const criarVisitante = async (req, res) => {
   }
 };
 
-// 🔥 ATUALIZAR ACEITOU JESUS (RADIO BUTTON)
+// ATUALIZAR ACEITOU JESUS (RADIO BUTTON)
 export const atualizarAceitou = async (req, res) => {
   try {
     const { id } = req.params;
