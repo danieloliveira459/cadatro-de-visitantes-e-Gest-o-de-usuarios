@@ -61,8 +61,14 @@
   align-items: center;
 }
 
-.span {
-  font-size: 1.2em;
+.logo-text {
+  font-size: 22px;
   font-weight: bold;
-  color:#e02020;
+  color: #e02020; /* vermelho principal */
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.logo-text span {
+  color: #000;
 }
