@@ -6,38 +6,67 @@ export const listarAceitaram = async (req, res) => {
     const [rows] = await db.query(
       "SELECT * FROM aceitaram_jesus ORDER BY data DESC"
     );
-    return res.json(rows);
+
+    return res.status(200).json(rows);
   } catch (err) {
     console.error("ERRO LISTAR:", err);
-    return res.status(500).json({ error: err.message });
+
+    return res.status(500).json({
+      error: "Erro ao listar registros",
+    });
   }
 };
 
-// CRIAR (SEM DATA - BANCO CONTROLA)
+// CRIAR
 export const criarAceitou = async (req, res) => {
   try {
-    const { nome, telefone, endereco, observacoes } = req.body;
+    let { nome, telefone, endereco, observacoes } = req.body;
 
-    if (!nome || !telefone) {
+    // ✅ SOMENTE NOME OBRIGATÓRIO
+    if (!nome || nome.trim() === "") {
       return res.status(400).json({
-        error: "Nome e telefone são obrigatórios",
+        error: "Nome é obrigatório",
       });
     }
+
+    // 🔥 LIMPEZA DOS DADOS
+    nome = nome.trim();
+    endereco = endereco?.trim() || null;
+    observacoes = observacoes?.trim() || null;
+
+    // remove máscara do telefone
+    telefone = telefone ? telefone.replace(/\D/g, "") : null;
+
+    console.log("BODY TRATADO:", {
+      nome,
+      telefone,
+      endereco,
+      observacoes,
+    });
 
     const [result] = await db.query(
       `INSERT INTO aceitaram_jesus 
       (nome, telefone, endereco, observacoes)
       VALUES (?, ?, ?, ?)`,
-      [nome, telefone, endereco || null, observacoes || null]
+      [
+        nome,
+        telefone,
+        endereco,
+        observacoes,
+      ]
     );
 
     return res.status(201).json({
       msg: "Registro salvo com sucesso",
       id: result.insertId,
     });
+
   } catch (err) {
     console.error("ERRO CRIAR:", err);
-    return res.status(500).json({ error: err.message });
+
+    return res.status(500).json({
+      error: "Erro ao cadastrar",
+    });
   }
 };
 
@@ -45,6 +74,12 @@ export const criarAceitou = async (req, res) => {
 export const deletarAceitou = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        error: "ID é obrigatório",
+      });
+    }
 
     const [result] = await db.query(
       "DELETE FROM aceitaram_jesus WHERE id = ?",
@@ -57,9 +92,15 @@ export const deletarAceitou = async (req, res) => {
       });
     }
 
-    return res.json({ msg: "Excluído com sucesso" });
+    return res.status(200).json({
+      msg: "Excluído com sucesso",
+    });
+
   } catch (err) {
     console.error("ERRO DELETAR:", err);
-    return res.status(500).json({ error: err.message });
+
+    return res.status(500).json({
+      error: "Erro ao deletar",
+    });
   }
 };
