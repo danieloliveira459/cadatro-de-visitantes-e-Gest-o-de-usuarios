@@ -202,6 +202,25 @@ export default function Pastor() {
     }
   };
 
+  const atualizarAceitou = async (id, valor) => {
+  try {
+    await fetch(`${API}/api/visitantes/${id}/aceitou`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ aceitouJesus: valor }),
+    });
+
+    // atualiza tela sem reload
+    setVisitantes((prev) =>
+      prev.map((v) =>
+        v.id === id ? { ...v, aceitou_jesus: valor ? 1 : 0 } : v
+      )
+    );
+  } catch (error) {
+    console.error("Erro ao atualizar:", error);
+  }
+};
+
   // PDF
   const gerarPDF = (tipo) => {
     const doc = new jsPDF();
