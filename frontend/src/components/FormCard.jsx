@@ -11,7 +11,6 @@ export default function FormCard() {
   const [funcao, setFuncao] = useState("");
   const [telefone, setTelefone] = useState("");
   const [igreja, setIgreja] = useState("");
-  const [aceitouJesus, setAceitouJesus] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // ✅ Máscara de telefone
@@ -33,48 +32,23 @@ export default function FormCard() {
       return;
     }
 
-    // ✅ Mantendo obrigatório (se quiser pode remover)
-    if (aceitouJesus === null) {
-      alert("Selecione se o visitante já aceitou Jesus!");
-      return;
-    }
-
     try {
       setLoading(true);
 
-      if (aceitouJesus === true) {
-        // Salva APENAS em aceitaram-jesus
-        const responseJesus = await fetch(`${API}/api/aceitaram-jesus`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nome,
-            telefone: telefone.replace(/\D/g, ""), // salva só números
-            endereco: igreja || "",
-            observacoes: funcao ? `Função: ${funcao}` : "",
-          }),
-        });
+      // ✅ Sempre salva em visitantes
+      const response = await fetch(`${API}/api/visitantes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome,
+          funcao: funcao || "",
+          telefone: telefone.replace(/\D/g, ""),
+          igreja: igreja || "",
+        }),
+      });
 
-        if (!responseJesus.ok) {
-          throw new Error("Erro ao salvar em aceitaram Jesus");
-        }
-
-      } else {
-        // Salva APENAS em visitantes
-        const response = await fetch(`${API}/api/visitantes`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nome,
-            cargo: funcao || "",
-            telefone: telefone.replace(/\D/g, ""),
-            igreja: igreja || "",
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Erro ao salvar visitante");
-        }
+      if (!response.ok) {
+        throw new Error("Erro ao salvar visitante");
       }
 
       // Limpa os campos
@@ -82,11 +56,9 @@ export default function FormCard() {
       setFuncao("");
       setTelefone("");
       setIgreja("");
-      setAceitouJesus(null);
 
       window.dispatchEvent(new Event("visitantesAtualizados"));
 
-      // Redireciona
       navigate("/pastor");
 
     } catch (error) {
@@ -134,30 +106,6 @@ export default function FormCard() {
           value={igreja}
           onChange={(e) => setIgreja(e.target.value)}
         />
-
-        {/* Radio Aceitou Jesus */}
-        <label style={{ marginTop: "12px" }}>Já aceitou Jesus?</label>
-        <div style={{ display: "flex", gap: "16px", marginTop: "6px" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
-            <input
-              type="radio"
-              name="aceitouJesus"
-              checked={aceitouJesus === true}
-              onChange={() => setAceitouJesus(true)}
-            />
-            Sim 
-          </label>
-
-          <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
-            <input
-              type="radio"
-              name="aceitouJesus"
-              checked={aceitouJesus === false}
-              onChange={() => setAceitouJesus(false)}
-            />
-            Não 
-          </label>
-        </div>
 
         <button className="btn-submit" type="submit" disabled={loading}>
           {loading ? "Cadastrando..." : "Cadastrar"}
