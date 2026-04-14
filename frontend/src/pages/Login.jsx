@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // 👈 useRef adicionado
 import { useNavigate, useLocation } from "react-router-dom";
 import { TbUserShare } from "react-icons/tb";
 import "./Login.css";
 import logo from "../assets/adtag.png";
 
-// ✅ BASE_URL seguro (NUNCA vazio)
 const BASE_URL =
   import.meta.env.VITE_API_URL ||
   "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
@@ -13,12 +12,12 @@ if (!import.meta.env.VITE_API_URL) {
   console.warn("⚠️ VITE_API_URL não definida. Usando fallback.");
 }
 
-// ✅ API organizada
 const API = `${BASE_URL}/api/auth`;
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+  const redirected = useRef(false); // 👈 substitui checkedAuth (não causa re-render)
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -33,18 +32,12 @@ export default function Login() {
 
   const [nivelUsuario, setNivelUsuario] = useState("");
   const [loadingNivel, setLoadingNivel] = useState(false);
-  const [checkedAuth, setCheckedAuth] = useState(false);
 
-  // ✅ FETCH COM TIMEOUT
   const fetchComTimeout = async (url, options = {}, timeout = 8000) => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
-
     try {
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal,
-      });
+      const response = await fetch(url, { ...options, signal: controller.signal });
       return response;
     } finally {
       clearTimeout(id);
@@ -60,7 +53,6 @@ export default function Login() {
 
     const buscarNivel = async () => {
       setLoadingNivel(true);
-
       try {
         const res = await fetchComTimeout(`${API}/nivel`, {
           method: "POST",
@@ -68,20 +60,12 @@ export default function Login() {
           body: JSON.stringify({ email }),
         });
 
-        if (!res.ok) {
-          setNivelUsuario("");
-          return;
-        }
+        if (!res.ok) { setNivelUsuario(""); return; }
 
         const data = await res.json().catch(() => ({}));
         setNivelUsuario(data?.nivel || "");
       } catch (err) {
-        console.error("Erro ao buscar nível:", err);
-
-        if (err.name === "AbortError") {
-          setErro("Servidor demorou para responder.");
-        }
-
+        if (err.name === "AbortError") setErro("Servidor demorou para responder.");
         setNivelUsuario("");
       } finally {
         setLoadingNivel(false);
@@ -92,15 +76,16 @@ export default function Login() {
     return () => clearTimeout(delay);
   }, [email]);
 
-  // 🔁 REDIRECIONAMENTO
+  // 🔁 REDIRECIONAMENTO — CORRIGIDO
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    if (token && !checkedAuth && location.pathname !== "/home") {
-      setCheckedAuth(true);
+    // useRef não causa re-render, sem loop
+    if (token && !redirected.current) {
+      redirected.current = true; // 👈 marca antes de navegar
       navigate("/home", { replace: true });
     }
-  }, [navigate, location.pathname, checkedAuth]);
+  }, []); // 👈 array vazio: roda só uma vez na montagem
 
   // 🔐 LOGIN
   const handleLogin = async (e) => {
@@ -124,11 +109,8 @@ export default function Login() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("usuarioLogado", JSON.stringify(data.usuario));
-
       navigate("/home", { replace: true });
     } catch (err) {
-      console.error(err);
-
       if (err.name === "AbortError") {
         setErro("Servidor demorou para responder.");
       } else {
@@ -142,10 +124,7 @@ export default function Login() {
     setErro("");
     setMensagem("");
 
-    if (!email) {
-      setErro("Digite seu email");
-      return;
-    }
+    if (!email) { setErro("Digite seu email"); return; }
 
     try {
       const res = await fetchComTimeout(`${API}/forgot`, {
@@ -156,26 +135,18 @@ export default function Login() {
 
       const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        setErro(data?.erro || "Erro ao recuperar senha");
-        return;
-      }
+      if (!res.ok) { setErro(data?.erro || "Erro ao recuperar senha"); return; }
 
       setMensagem("Email de recuperação enviado!");
     } catch (err) {
-      console.error(err);
       setErro("Erro ao solicitar reset");
     }
   };
 
-  // 🎯 FORMATAR NÍVEL
   const formatarNivel = (nivel) => {
     const mapa = {
-      USER: "Usuário",
-      PASTOR: "Pastor",
-      VICE: "Vice",
-      DIRIGENTE: "Dirigente",
-      ADM: "Administrador",
+      USER: "Usuário", PASTOR: "Pastor", VICE: "Vice",
+      DIRIGENTE: "Dirigente", ADM: "Administrador",
     };
     return mapa[nivel] || nivel;
   };
@@ -185,38 +156,23 @@ export default function Login() {
     setErro("");
     setMensagem("");
 
-    if (!nome || !emailCad || !senhaCad) {
-      setErro("Preencha todos os campos");
-      return;
-    }
+    if (!nome || !emailCad || !senhaCad) { setErro("Preencha todos os campos"); return; }
 
     try {
       const res = await fetchComTimeout(`${API}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome,
-          email: emailCad,
-          senha: senhaCad,
-          nivel,
-        }),
+        body: JSON.stringify({ nome, email: emailCad, senha: senhaCad, nivel }),
       });
 
       const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        setErro(data?.erro || "Erro ao cadastrar");
-        return;
-      }
+      if (!res.ok) { setErro(data?.erro || "Erro ao cadastrar"); return; }
 
       setMensagem("Usuário cadastrado com sucesso!");
-      setNome("");
-      setEmailCad("");
-      setSenhaCad("");
-      setNivel("USER");
+      setNome(""); setEmailCad(""); setSenhaCad(""); setNivel("USER");
       setMostrarCadastro(false);
     } catch (err) {
-      console.error(err);
       setErro("Erro ao cadastrar");
     }
   };
@@ -225,12 +181,7 @@ export default function Login() {
     <div className="login-container">
       <div className="login-card">
         <h1 className="logo-title">
-          <img
-            src={logo}
-            alt="ADTAG Logo"
-            className="logo"
-            onError={(e) => (e.target.style.display = "none")}
-          />
+          <img src={logo} alt="ADTAG Logo" className="logo" onError={(e) => (e.target.style.display = "none")} />
           ADTAG
         </h1>
 
@@ -240,76 +191,36 @@ export default function Login() {
         {mensagem && <p className="sucesso">{mensagem}</p>}
 
         <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <input type="email" placeholder="Email" value={email}
+            onChange={(e) => setEmail(e.target.value)} required />
 
-          {loadingNivel && (
-            <p style={{ fontSize: "12px" }}>Verificando nível...</p>
-          )}
+          {loadingNivel && <p style={{ fontSize: "12px" }}>Verificando nível...</p>}
 
           {nivelUsuario && !loadingNivel && (
             <p style={{ color: "#e02020" }}>
-              <TbUserShare />{" "}
-              <strong>{formatarNivel(nivelUsuario)}</strong>
+              <TbUserShare /> <strong>{formatarNivel(nivelUsuario)}</strong>
             </p>
           )}
 
-          <input
-            type="password"
-            placeholder="Senha"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            required
-          />
+          <input type="password" placeholder="Senha" value={senha}
+            onChange={(e) => setSenha(e.target.value)} required />
 
-          <button type="submit" className="btn-login">
-            Entrar
-          </button>
+          <button type="submit" className="btn-login">Entrar</button>
         </form>
 
-        <button className="btn-login" onClick={recuperarSenha}>
-          Esqueci minha senha
-        </button>
+        <button className="btn-login" onClick={recuperarSenha}>Esqueci minha senha</button>
 
-        <button
-          className="btn-register"
-          onClick={() => setMostrarCadastro(!mostrarCadastro)}
-        >
+        <button className="btn-register" onClick={() => setMostrarCadastro(!mostrarCadastro)}>
           Cadastrar Usuário
         </button>
 
         {mostrarCadastro && (
           <div className="cadastro-box">
-            <input
-              type="text"
-              placeholder="Nome"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-            />
+            <input type="text" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
+            <input type="email" placeholder="Email" value={emailCad} onChange={(e) => setEmailCad(e.target.value)} />
+            <input type="password" placeholder="Senha" value={senhaCad} onChange={(e) => setSenhaCad(e.target.value)} />
 
-            <input
-              type="email"
-              placeholder="Email"
-              value={emailCad}
-              onChange={(e) => setEmailCad(e.target.value)}
-            />
-
-            <input
-              type="password"
-              placeholder="Senha"
-              value={senhaCad}
-              onChange={(e) => setSenhaCad(e.target.value)}
-            />
-
-            <select
-              value={nivel}
-              onChange={(e) => setNivel(e.target.value)}
-            >
+            <select value={nivel} onChange={(e) => setNivel(e.target.value)}>
               <option value="USER">Usuário</option>
               <option value="PASTOR">Pastor</option>
               <option value="VICE">Vice</option>
@@ -317,9 +228,7 @@ export default function Login() {
               <option value="ADM">Administrador</option>
             </select>
 
-            <button onClick={handleCadastrarUsuario} className="btn-login">
-              Salvar Usuário
-            </button>
+            <button onClick={handleCadastrarUsuario} className="btn-login">Salvar Usuário</button>
           </div>
         )}
       </div>
