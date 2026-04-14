@@ -1,74 +1,151 @@
 .membros-container {
   padding: 24px;
-  max-width: 900px;
+  max-width: 1100px;
   margin: auto;
 }
 
-/* TABS */
+/* ================= TABS ================= */
 .tabs {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #e5e5e5;
+  margin-bottom: 24px;
 }
 
 .tab {
   padding: 10px 18px;
-  border-radius: 20px;
-  border: none;
-  background: #eee;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid #e0e0e0;
+  border-bottom: none;
+  background: #f7f7f7;
   cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: #eee;
+  color: #222;
 }
 
 .tab.ativa {
-  background: #e02020;
-  color: white;
+  background: #fff;
+  color: #e02020;
+  border-color: #e5e5e5;
+  border-bottom-color: #fff;
+  font-weight: 600;
 }
 
-/* CARD */
+/* ================= CARD ================= */
 .card-padrao {
-  background: white;
-  padding: 25px;
+  background: #fff;
+  padding: 24px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
+/* ================= TÍTULO ================= */
 .titulo-card {
   display: flex;
-  gap: 8px;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  color: #111;
 }
 
-/* FORM */
+/* ================= FORM ================= */
 .form-padrao {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
 .form-padrao input {
-  padding: 12px;
+  padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #ddd;
+  font-size: 13px;
+  outline: none;
+  transition: border 0.2s;
 }
 
-/* BOTÕES */
+.form-padrao input:focus {
+  border-color: #e02020;
+}
+
+/* ================= BOTÕES ================= */
 .btn-padrao {
   background: #e02020;
   color: white;
   border: none;
-  padding: 14px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-padrao:hover {
+  background: #c01010;
+}
+
+.btn-padrao:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .btn-secundario {
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #f7f7f7;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-/* QR */
+.btn-secundario:hover {
+  background: #e02020;
+  color: #fff;
+  border-color: #e02020;
+}
+
+/* ================= MENSAGENS ================= */
+.msg {
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: #1a7a1a;
+}
+
+/* ================= QR CODE ================= */
 .qr-box {
-  margin-top: 20px;
+  margin-top: 24px;
   text-align: center;
+}
+
+.qr-box h3 {
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+/* ================= RESPONSIVO ================= */
+@media (max-width: 768px) {
+  .tabs {
+    gap: 6px;
+  }
+
+  .tab {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .card-padrao {
+    padding: 18px;
+  }
 }
