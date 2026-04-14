@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
@@ -9,6 +9,7 @@ import Admin from "./pages/Admin";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import AceitaramJesus from "./pages/AceitaramJesus";
 import ResetPassword from "./pages/ResetPassword"; 
+import Membros from "./pages/CadastroMembros";
 
 // FUNÇÃO SEGURA
 function getUsuario() {
@@ -26,14 +27,13 @@ function getUsuario() {
 export default function App() {
   const [usuario, setUsuario] = useState(getUsuario());
 
-  //  Atualiza se localStorage mudar (login/logout)
+  // Atualiza se localStorage mudar (login/logout)
   useEffect(() => {
     const handleStorage = () => {
       setUsuario(getUsuario());
     };
 
     window.addEventListener("storage", handleStorage);
-
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
@@ -51,11 +51,9 @@ export default function App() {
           }
         />
 
-        {/* PÚBLICAS */}
+        {/* ROTAS PÚBLICAS */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        {/* RESET PASSWORD (PÚBLICA) */}
         <Route path="/reset" element={<ResetPassword />} />
 
         {/* ADMIN */}
@@ -98,7 +96,17 @@ export default function App() {
           }
         />
 
-        {/* FALLBACK INTELIGENTE */}
+        {/* 🔥 NOVA ROTA MEMBROS */}
+        <Route
+          path="/membros"
+          element={
+            <ProtectedRoute allowedRoles={["ADM","PASTOR","VICE","DIRIGENTE","ATENDENTE"]}>
+              <Membros />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* FALLBACK */}
         <Route
           path="*"
           element={
@@ -112,5 +120,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
-//
