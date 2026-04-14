@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   FaChildren,
   FaPerson,
   FaPersonDress,
-  FaQrcode,
   FaUsers,
-  FaDownload,
+  FaQrcode,
 } from "react-icons/fa6";
 import QRCode from "react-qr-code";
 import "./CadastroMembros.css";
@@ -14,185 +13,172 @@ const ABAS = [
   { id: "criancas", label: "Crianças", icon: <FaChildren /> },
   { id: "jovens", label: "Jovens", icon: <FaPerson /> },
   { id: "irmas", label: "Irmãs", icon: <FaPersonDress /> },
-  { id: "varones", label: "Varões", icon: <FaPerson /> },
+  { id: "varoes", label: "Varões", icon: <FaPerson /> },
   { id: "geral", label: "Cadastro Geral", icon: <FaUsers /> },
   { id: "qrcode", label: "QR Code", icon: <FaQrcode /> },
 ];
 
-const CAMPOS_BASE = [
-  { name: "nome", label: "Nome completo *", type: "text", required: true },
-  { name: "telefone", label: "Telefone", type: "tel" },
-  { name: "endereco", label: "Endereço", type: "text" },
-  { name: "dataNasc", label: "Data de nascimento", type: "date" },
-];
-
-const CAMPOS_EXTRA = {
-  criancas: [
-    { name: "responsavel", label: "Responsável *", type: "text", required: true },
-  ],
-};
-
-function FormularioMembro({ categoria }) {
-  const camposExtras = CAMPOS_EXTRA[categoria] || [];
-  const todosCampos = [...CAMPOS_BASE, ...camposExtras];
-
-  const gerarEstadoInicial = () =>
-    todosCampos.reduce((acc, c) => {
-      acc[c.name] = "";
-      return acc;
-    }, {});
-
-  const [form, setForm] = useState(gerarEstadoInicial());
+export default function CadastroMembros() {
+  const [aba, setAba] = useState("criancas");
   const [membros, setMembros] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setForm(gerarEstadoInicial());
-  }, [categoria]);
+  const [form, setForm] = useState({
+    nome: "",
+    telefone: "",
+  });
+
+  const [qrNome, setQrNome] = useState("");
+  const [qrEmail, setQrEmail] = useState("");
+  const [gerado, setGerado] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    setTimeout(() => {
-      setMembros((prev) => [...prev, { ...form, id: Date.now() }]);
-      setForm(gerarEstadoInicial());
-      setLoading(false);
-    }, 500);
+    setMembros((prev) => [
+      ...prev,
+      { ...form, categoria: aba, id: Date.now() },
+    ]);
+
+    setForm({ nome: "", telefone: "" });
   };
 
-  return (
-    <div className="painel">
-
-      {/* FORM */}
-      <div className="card">
-        <h2 className="card-title">
-          {ABAS.find((a) => a.id === categoria)?.icon} Cadastro de {categoria}
-        </h2>
-
-        <form className="form" onSubmit={handleSubmit}>
-          {todosCampos.map((campo) => (
-            <div key={campo.name} className="form-group">
-              <label>{campo.label}</label>
-              <input
-                type={campo.type}
-                name={campo.name}
-                value={form[campo.name]}
-                onChange={(e) =>
-                  setForm({ ...form, [campo.name]: e.target.value })
-                }
-              />
-            </div>
-          ))}
-
-          <button className="btn-primary" disabled={loading}>
-            {loading ? "Salvando..." : "Cadastrar"}
-          </button>
-        </form>
-      </div>
-
-      {/* LISTA */}
-      <div className="card">
-        <h2 className="card-title">
-          <FaUsers /> Membros ({membros.length})
-        </h2>
-
-        {membros.length === 0 ? (
-          <p>Nenhum membro cadastrado</p>
-        ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Telefone</th>
-              </tr>
-            </thead>
-            <tbody>
-              {membros.map((m) => (
-                <tr key={m.id}>
-                  <td>{m.nome}</td>
-                  <td>{m.telefone || "-"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function AbaQRCode() {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [gerado, setGerado] = useState(false);
-
-  const url = `${window.location.origin}/login?email=${email}`;
-
-  return (
-    <div className="painel">
-      <div className="card">
-        <h2 className="card-title">
-          <FaQrcode /> Gerar QR Code
-        </h2>
-
-        <form
-          className="form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setGerado(true);
-          }}
-        >
-          <div className="form-group">
-            <label>Nome</label>
-            <input value={nome} onChange={(e) => setNome(e.target.value)} />
-          </div>
-
-          <div className="form-group">
-            <label>Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-
-          <button className="btn-primary">Gerar</button>
-        </form>
-      </div>
-
-      {gerado && (
-        <div className="card">
-          <h2 className="card-title">{nome}</h2>
-
-          <QRCode value={url} size={180} />
-
-          <button className="btn-primary" style={{ marginTop: 10 }}>
-            <FaDownload /> Baixar
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function CadastroMembros() {
-  const [aba, setAba] = useState("criancas");
+  const url = `${window.location.origin}/login?email=${qrEmail}`;
 
   return (
     <div className="container">
+
+      {/* 🔙 VOLTAR */}
+      <div style={{ marginBottom: 20 }}>
+        ← Voltar para Cadastro
+      </div>
+
+      {/* 📑 ABAS */}
       <div className="tabs">
-        {ABAS.map((a) => (
+        {ABAS.map((item) => (
           <button
-            key={a.id}
-            className={aba === a.id ? "tab active" : "tab"}
-            onClick={() => setAba(a.id)}
+            key={item.id}
+            className={`tab ${aba === item.id ? "active" : ""}`}
+            onClick={() => setAba(item.id)}
           >
-            {a.icon} {a.label}
+            {item.icon} {item.label}
           </button>
         ))}
       </div>
 
-      {aba === "qrcode" ? (
-        <AbaQRCode />
-      ) : (
-        <FormularioMembro categoria={aba} />
+      {/* 📊 CONTEÚDO */}
+      {aba !== "qrcode" && (
+        <div className="painel">
+
+          {/* CARD ESTATÍSTICAS */}
+          <div className="card">
+            <h2 className="card-title">
+              <FaUsers /> Estatísticas
+            </h2>
+
+            <div className="stats-box">
+              <span>Total de Membros</span>
+              <h1>{membros.length}</h1>
+            </div>
+          </div>
+
+          {/* CARD LISTA */}
+          <div className="card">
+            <h2 className="card-title">
+              <FaUsers /> Membros Cadastrados
+            </h2>
+
+            {/* FORM */}
+            <form onSubmit={handleSubmit} className="form">
+              <input
+                placeholder="Nome"
+                value={form.nome}
+                onChange={(e) =>
+                  setForm({ ...form, nome: e.target.value })
+                }
+                required
+              />
+
+              <input
+                placeholder="Telefone"
+                value={form.telefone}
+                onChange={(e) =>
+                  setForm({ ...form, telefone: e.target.value })
+                }
+              />
+
+              <button className="btn-primary">
+                Cadastrar
+              </button>
+            </form>
+
+            {/* TABELA */}
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Telefone</th>
+                  <th>Categoria</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {membros.map((m) => (
+                  <tr key={m.id}>
+                    <td>{m.nome}</td>
+                    <td>{m.telefone}</td>
+                    <td>{m.categoria}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* 🔳 QR CODE */}
+      {aba === "qrcode" && (
+        <div className="painel">
+
+          <div className="card">
+            <h2 className="card-title">
+              <FaQrcode /> Gerar QR Code
+            </h2>
+
+            <form
+              className="form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setGerado(true);
+              }}
+            >
+              <input
+                placeholder="Nome"
+                value={qrNome}
+                onChange={(e) => setQrNome(e.target.value)}
+                required
+              />
+
+              <input
+                placeholder="Email"
+                value={qrEmail}
+                onChange={(e) => setQrEmail(e.target.value)}
+                required
+              />
+
+              <button className="btn-primary">
+                Gerar QR Code
+              </button>
+            </form>
+          </div>
+
+          {gerado && (
+            <div className="card" style={{ textAlign: "center" }}>
+              <h3>{qrNome}</h3>
+
+              <QRCode value={url} size={180} />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
