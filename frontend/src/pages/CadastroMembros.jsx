@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa6";
 import QRCode from "react-qr-code";
 import "./CadastroMembros.css";
+import Header from "../components/Header";
 
 const ABAS = [
   { id: "criancas", label: "Crianças", icon: <FaChildren /> },
@@ -23,6 +24,7 @@ const BASE_URL =
   import.meta.env.VITE_API_URL ||
   "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
 
+/* ================= FORMULÁRIO ================= */
 function Formulario({ tipo }) {
   const [form, setForm] = useState({
     nome: "",
@@ -54,11 +56,13 @@ function Formulario({ tipo }) {
     setMsg("");
 
     try {
-      await fetch(`${BASE_URL}/api/membros`, {
+      const res = await fetch(`${BASE_URL}/api/membros`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, tipo }),
       });
+
+      if (!res.ok) throw new Error();
 
       setMsg("✅ Cadastrado com sucesso!");
     } catch {
@@ -75,11 +79,12 @@ function Formulario({ tipo }) {
     setLoading(false);
   };
 
+  const abaAtual = ABAS.find((a) => a.id === tipo);
+
   return (
     <div className="card-padrao">
       <h2 className="titulo-card">
-        {ABAS.find((a) => a.id === tipo)?.icon}
-        Cadastro de {ABAS.find((a) => a.id === tipo)?.label}
+        {abaAtual?.icon} Cadastro de {abaAtual?.label}
       </h2>
 
       {msg && <p className="msg">{msg}</p>}
@@ -115,13 +120,14 @@ function Formulario({ tipo }) {
         />
 
         <button className="btn-padrao" disabled={loading}>
-          {loading ? "Salvando..." : `Cadastrar ${ABAS.find(a => a.id === tipo)?.label}`}
+          {loading ? "Salvando..." : `Cadastrar ${abaAtual?.label}`}
         </button>
       </form>
     </div>
   );
 }
 
+/* ================= QR CODE ================= */
 function AbaQRCode() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -131,9 +137,12 @@ function AbaQRCode() {
 
   const baixar = () => {
     const svg = document.querySelector("svg");
-    const blob = new Blob([new XMLSerializer().serializeToString(svg)], {
-      type: "image/svg+xml",
-    });
+    if (!svg) return;
+
+    const blob = new Blob(
+      [new XMLSerializer().serializeToString(svg)],
+      { type: "image/svg+xml" }
+    );
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -185,30 +194,36 @@ function AbaQRCode() {
   );
 }
 
+/* ================= MAIN ================= */
 export default function CadastroMembros() {
   const [aba, setAba] = useState("criancas");
 
   return (
-    <div className="membros-container">
-      {/* TABS */}
-      <div className="tabs">
-        {ABAS.map((a) => (
-          <button
-            key={a.id}
-            className={aba === a.id ? "tab ativa" : "tab"}
-            onClick={() => setAba(a.id)}
-          >
-            {a.label}
-          </button>
-        ))}
-      </div>
+    <>
+      {/* 🔥 HEADER GLOBAL */}
+      <Header />
 
-      {/* CONTEÚDO */}
-      {aba === "qrcode" ? (
-        <AbaQRCode />
-      ) : (
-        <Formulario tipo={aba} />
-      )}
-    </div>
+      <div className="membros-container">
+        {/* TABS */}
+        <div className="tabs">
+          {ABAS.map((a) => (
+            <button
+              key={a.id}
+              className={aba === a.id ? "tab ativa" : "tab"}
+              onClick={() => setAba(a.id)}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+
+        {/* CONTEÚDO */}
+        {aba === "qrcode" ? (
+          <AbaQRCode />
+        ) : (
+          <Formulario tipo={aba} />
+        )}
+      </div>
+    </>
   );
 }
