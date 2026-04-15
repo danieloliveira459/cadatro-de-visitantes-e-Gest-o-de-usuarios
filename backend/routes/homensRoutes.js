@@ -1,14 +1,10 @@
 import express from "express";
-import {
-  listarHomens,
-  criarHomen,
-  deletarHomen
-} from "../controllers/homensController.js";
+import { listarHomens, criarHomem, deletarHomem } from "../controllers/homensController.js";
 
 const router = express.Router();
 
 router.get("/", listarHomens);
-router.post("/", criarHomen);
-router.delete("/:id", deletarHomen);
+router.post("/", criarHomem);
+router.delete("/:id", deletarHomem);
 
 export default router;
