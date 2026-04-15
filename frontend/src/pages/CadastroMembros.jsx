@@ -17,7 +17,7 @@ const ABAS = [
   { id: "criancas", label: "Crianças",      singular: "Criança", icon: <FaChildren />    },
   { id: "jovens",   label: "Jovens",         singular: "Jovem",   icon: <FaPerson />      },
   { id: "mulheres", label: "Mulheres",       singular: "Mulher",  icon: <FaPersonDress /> },
-  { id: "homens",   label: "homens",         singular: "homens",   icon: <FaPerson />      },
+  { id: "homens",   label: "Varões",         singular: "Varão",   icon: <FaPerson />      }, // ✅ corrigido
   { id: "geral",    label: "Cadastro Geral", singular: null,      icon: <FaUsers />       },
 ];
 
@@ -34,12 +34,15 @@ async function exportarPDF({ titulo, colunas, linhas, nomeArquivo }) {
 
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
-  // Cabeçalho
+  // Título em vermelho
   doc.setFontSize(16);
-  doc.setTextColor(40, 40, 40);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(220, 38, 38);
   doc.text(titulo, 14, 16);
 
+  // Data/hora em cinza
   doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
   doc.setTextColor(120, 120, 120);
   const agora = new Date();
   doc.text(
@@ -48,24 +51,37 @@ async function exportarPDF({ titulo, colunas, linhas, nomeArquivo }) {
     23
   );
 
-  doc.setDrawColor(200, 200, 200);
+  // Linha separadora vermelha
+  doc.setDrawColor(220, 38, 38);
+  doc.setLineWidth(0.5);
   doc.line(14, 26, 283, 26);
 
-  // Tabela
+  // Tabela com cabeçalho vermelho
   autoTable(doc, {
     startY: 30,
     head: [colunas],
     body: linhas,
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: [30, 90, 160], textColor: 255, fontStyle: "bold" },
-    alternateRowStyles: { fillColor: [240, 245, 255] },
+    styles: {
+      fontSize: 9,
+      cellPadding: 3,
+      textColor: [30, 30, 30],
+    },
+    headStyles: {
+      fillColor: [220, 38, 38],   // ✅ vermelho
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+    },
+    alternateRowStyles: {
+      fillColor: [254, 242, 242], // ✅ vermelho muito claro nas linhas alternadas
+    },
     columnStyles: { 0: { cellWidth: 55 } },
   });
 
   // Rodapé com total
   const finalY = doc.lastAutoTable.finalY + 6;
   doc.setFontSize(10);
-  doc.setTextColor(60, 60, 60);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(220, 38, 38);
   doc.text(`Total de registros: ${linhas.length}`, 14, finalY);
 
   doc.save(nomeArquivo);
@@ -149,9 +165,9 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar }) {
         body: JSON.stringify({ ...form, tipo }),
       });
       if (!res.ok) throw new Error();
-      setMsg(` ${abaAtual.singular} cadastrado(a) com sucesso!`);
+      setMsg(`✅ ${abaAtual.singular} cadastrado(a) com sucesso!`);
     } catch {
-      setMsg(` ${abaAtual.singular} salvo(a) localmente (sem conexão com servidor).`);
+      setMsg(`⚠️ ${abaAtual.singular} salvo(a) localmente (sem conexão com servidor).`);
     }
 
     const agora = new Date();
