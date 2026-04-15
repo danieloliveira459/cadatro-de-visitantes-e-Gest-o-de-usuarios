@@ -12,7 +12,7 @@ import authRoutes from "./routes/authRoutes.js";
 
 //  PADRONIZADO
 import cadastroGeralRoutes from "./routes/cadastroGeralRoutes.js";
-import criancasRoutes from "./routes/criancasRoutes.js";
+import criancas from "./routes/criancaRoutes.js";
 import jovensRoutes from "./routes/jovensRoutes.js";
 import irmasRoutes from "./routes/irmasRoutes.js";
 import homensRoutes from "./routes/homensRoutes.js";
@@ -47,7 +47,7 @@ app.use("/api/auth", authRoutes);
 
 //  ROTAS MEMBROS
 app.use("/api/cadastro-geral", cadastroGeralRoutes);
-app.use("/api/criancas", criancasRoutes);
+app.use("/api/criancas", criancas);
 app.use("/api/jovens", jovensRoutes);
 app.use("/api/irmas", irmasRoutes);
 app.use("/api/homens", homensRoutes);
