@@ -12,7 +12,7 @@ import authRoutes from "./routes/authRoutes.js";
 
 //  PADRONIZADO
 import cadastroGeralRoutes from "./routes/cadastroGeralRoutes.js";
-import criancas from "./routes/criancaRoutes.js";
+import criancas from "./routes/criancasRoutes.js";
 import jovensRoutes from "./routes/jovensRoutes.js";
 import irmas from "./routes/irmaRoutes.js";
 import homensRoutes from "./routes/homensRoutes.js";
