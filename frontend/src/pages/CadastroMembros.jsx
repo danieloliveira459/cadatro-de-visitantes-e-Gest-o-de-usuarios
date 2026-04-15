@@ -1,278 +1,461 @@
 import { useState, useEffect } from "react";
-import {
-  FaChildren,
-  FaPerson,
-  FaPersonDress,
-  FaQrcode,
-  FaUsers,
-  FaDownload,
-  FaTrash,
-} from "react-icons/fa6";
-import QRCode from "react-qr-code";
-import "./CadastroMembros.css";
-import Header from "../components/Header";
+import { Users, UserPlus, QrCode, Baby, Users as UsersGroup, UserCircle, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router";
+import { QRCodeSVG } from "qrcode.react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 
-const ABAS = [
-  { id: "criancas", label: "Crianças", singular: "Criança", icon: <FaChildren /> },
-  { id: "jovens", label: "Jovens", singular: "Jovem", icon: <FaPerson /> },
-  { id: "irmas", label: "Irmãs", singular: "Irmã", icon: <FaPersonDress /> },
-  { id: "homens", label: "Homens", singular: "Homem", icon: <FaPerson /> },
-  { id: "geral", label: "Cadastro Geral", singular: null, icon: <FaUsers /> },
-  { id: "qrcode", label: "QR Code", singular: null, icon: <FaQrcode /> },
-];
+interface Membro {
+  id: number;
+  nome: string;
+  idade: string;
+  telefone: string;
+  endereco: string;
+  categoria: "crianca" | "jovem" | "irma" | "varao" | "geral";
+  data: string;
+}
 
-const BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
+export default function CadastroMembros() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("criancas");
+  const [membros, setMembros] = useState<Membro[]>([]);
+  
+  // Estado para QR Codes de cada categoria
+  const [qrCodeAtivo, setQrCodeAtivo] = useState<{ [key: string]: boolean }>({
+    crianca: false,
+    jovem: false,
+    irma: false,
+    varao: false,
+    geral: false,
+  });
 
-/* ================= FORMULÁRIO ================= */
-function Formulario({ tipo, onAtualizar }) {
-  const [form, setForm] = useState({
+  // Carregar membros do localStorage ao montar o componente
+  useEffect(() => {
+    carregarMembros();
+  }, []);
+
+  const carregarMembros = () => {
+    const membrosStorage = localStorage.getItem("membros");
+    if (membrosStorage) {
+      setMembros(JSON.parse(membrosStorage));
+    }
+  };
+
+  // Estados para formulários de cada categoria
+  const [formCrianca, setFormCrianca] = useState({
     nome: "",
     idade: "",
     telefone: "",
     endereco: "",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [formJovem, setFormJovem] = useState({
+    nome: "",
+    idade: "",
+    telefone: "",
+    endereco: "",
+  });
 
-  const abaAtual = ABAS.find((a) => a.id === tipo);
+  const [formIrma, setFormIrma] = useState({
+    nome: "",
+    idade: "",
+    telefone: "",
+    endereco: "",
+  });
 
-  useEffect(() => {
-    setForm({ nome: "", idade: "", telefone: "", endereco: "" });
-    setMsg("");
-  }, [tipo]);
+  const [formVarao, setFormVarao] = useState({
+    nome: "",
+    idade: "",
+    telefone: "",
+    endereco: "",
+  });
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [formGeral, setFormGeral] = useState({
+    nome: "",
+    idade: "",
+    telefone: "",
+    endereco: "",
+  });
 
-  const handleSubmit = async (e) => {
+  const handleDelete = (id: number) => {
+    if (confirm("Tem certeza que deseja remover este membro?")) {
+      const novosMembros = membros.filter((m) => m.id !== id);
+      localStorage.setItem("membros", JSON.stringify(novosMembros));
+      setMembros(novosMembros);
+    }
+  };
+
+  const handleSubmit = (
+    e: React.FormEvent,
+    formData: typeof formCrianca,
+    categoria: Membro["categoria"],
+    setForm: React.Dispatch<React.SetStateAction<typeof formCrianca>>
+  ) => {
     e.preventDefault();
-    setLoading(true);
-    setMsg("");
+    if (formData.nome && formData.idade && formData.telefone && formData.endereco) {
+      const now = new Date();
+      const dataFormatada = `${now.getDate().toString().padStart(2, "0")}/${(now.getMonth() + 1).toString().padStart(2, "0")}/${now.getFullYear()} ${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
 
-    try {
-      const res = await fetch(`${BASE_URL}/api/membros`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, tipo }),
-      });
+      const novoMembro: Membro = {
+        id: Date.now(),
+        nome: formData.nome,
+        idade: formData.idade,
+        telefone: formData.telefone,
+        endereco: formData.endereco,
+        categoria,
+        data: dataFormatada,
+      };
 
-      if (!res.ok) throw new Error();
+      // Salvar no localStorage
+      const novosMembros = [...membros, novoMembro];
+      localStorage.setItem("membros", JSON.stringify(novosMembros));
+      setMembros(novosMembros);
 
-      setMsg("✅ Cadastrado com sucesso!");
-      onAtualizar(); // 🔥 atualiza lista do banco
-    } catch {
-      setMsg("❌ Erro ao salvar no banco");
-    }
+      // Limpar formulário
+      setForm({ nome: "", idade: "", telefone: "", endereco: "" });
 
-    setForm({ nome: "", idade: "", telefone: "", endereco: "" });
-    setLoading(false);
-  };
-
-  return (
-    <div className="card-padrao">
-      <h2 className="titulo-card">
-        {abaAtual?.icon} Cadastro de {abaAtual?.label}
-      </h2>
-
-      {msg && <p className="msg">{msg}</p>}
-
-      <form onSubmit={handleSubmit} className="form-padrao">
-        <input
-          name="nome"
-          placeholder="Nome completo"
-          value={form.nome}
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          name="idade"
-          placeholder="Idade"
-          value={form.idade}
-          onChange={handleChange}
-        />
-
-        <input
-          name="telefone"
-          placeholder="Telefone"
-          value={form.telefone}
-          onChange={handleChange}
-        />
-
-        <input
-          name="endereco"
-          placeholder="Endereço"
-          value={form.endereco}
-          onChange={handleChange}
-        />
-
-        <button className="btn-padrao" disabled={loading}>
-          {loading ? "Salvando..." : "Cadastrar"}
-        </button>
-      </form>
-    </div>
-  );
-}
-
-/* ================= LISTA ================= */
-function Lista({ tipo, membros, onAtualizar }) {
-  const abaAtual = ABAS.find((a) => a.id === tipo);
-
-  const handleDelete = async (id) => {
-    if (!confirm("Deseja remover este membro?")) return;
-
-    try {
-      await fetch(`${BASE_URL}/api/membros/${id}`, {
-        method: "DELETE",
-      });
-
-      onAtualizar();
-    } catch {
-      alert("Erro ao excluir");
+      // Mostrar mensagem de sucesso
+      alert("Membro cadastrado com sucesso!");
     }
   };
 
-  return (
-    <div className="card-padrao">
-      <h2 className="titulo-card">
-        {abaAtual?.icon} {abaAtual?.label}
-      </h2>
-
-      {membros.length === 0 ? (
-        <p>Nenhum membro encontrado</p>
-      ) : (
-        <table className="membro-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Idade</th>
-              <th>Telefone</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {membros.map((m) => (
-              <tr key={m.id}>
-                <td>{m.nome}</td>
-                <td>{m.idade || "-"}</td>
-                <td>{m.telefone || "-"}</td>
-                <td>
-                  <button onClick={() => handleDelete(m.id)}>
-                    <FaTrash />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
-  );
-}
-
-/* ================= QR CODE ================= */
-function AbaQRCode() {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [gerado, setGerado] = useState(false);
-
-  const url = `${window.location.origin}/login?email=${encodeURIComponent(email)}`;
-
-  return (
-    <div className="card-padrao">
-      <h2 className="titulo-card">
-        <FaQrcode /> QR Code
-      </h2>
-
-      <form
-        className="form-padrao"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setGerado(true);
-        }}
-      >
-        <input
-          placeholder="Nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          required
-        />
-
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <button className="btn-padrao">Gerar</button>
-      </form>
-
-      {gerado && (
-        <div className="qr-box">
-          <h3>{nome}</h3>
-          <QRCode value={url} size={180} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ================= MAIN ================= */
-export default function CadastroMembros() {
-  const [aba, setAba] = useState("criancas");
-  const [membros, setMembros] = useState([]);
-
-  const carregarMembros = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/api/membros`);
-      const data = await res.json();
-
-      setMembros(data);
-    } catch {
-      console.error("Erro ao carregar membros");
-    }
+  const toggleQRCode = (categoria: Membro["categoria"]) => {
+    setQrCodeAtivo((prev) => ({
+      ...prev,
+      [categoria]: !prev[categoria],
+    }));
   };
 
-  useEffect(() => {
-    carregarMembros();
-  }, []);
+  const renderForm = (
+    formData: typeof formCrianca,
+    setFormData: React.Dispatch<React.SetStateAction<typeof formCrianca>>,
+    categoria: Membro["categoria"],
+    titulo: string,
+    icon: React.ReactNode
+  ) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    };
 
-  const membrosFiltrados = membros.filter((m) => m.tipo === aba);
+    // Filtrar membros por categoria
+    const membrosPorCategoria = membros.filter((m) => m.categoria === categoria);
+    
+    // Gerar dados do QR Code com todos os membros da categoria
+    const qrData = JSON.stringify({
+      categoria: categoria,
+      total: membrosPorCategoria.length,
+      membros: membrosPorCategoria.map((m) => ({
+        id: m.id,
+        nome: m.nome,
+        idade: m.idade,
+        telefone: m.telefone,
+        endereco: m.endereco,
+        data: m.data,
+      })),
+    });
 
-  return (
-    <>
-      <Header />
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Formulário - Lado Esquerdo */}
+          <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 mb-6">
+              {icon}
+              <h2 className="text-lg text-gray-900">{titulo}</h2>
+            </div>
 
-      <div className="membros-container">
-        <div className="tabs">
-          {ABAS.map((a) => (
-            <button
-              key={a.id}
-              className={aba === a.id ? "tab ativa" : "tab"}
-              onClick={() => setAba(a.id)}
+            <div className="mb-6">
+              <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg border border-red-200">
+                <div className="text-sm text-red-700 mb-1">Total de {titulo.replace("Cadastro de ", "")}</div>
+                <div className="text-3xl font-bold text-red-600">{membrosPorCategoria.length}</div>
+              </div>
+            </div>
+
+            <form
+              onSubmit={(e) => handleSubmit(e, formData, categoria, setFormData)}
+              className="space-y-6"
             >
-              {a.icon} {a.label}
-            </button>
-          ))}
+              <div>
+                <label className="block text-sm text-gray-700 mb-2">Nome Completo</label>
+                <input
+                  type="text"
+                  name="nome"
+                  value={formData.nome}
+                  onChange={handleInputChange}
+                  placeholder="Digite o nome completo"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626] focus:ring-opacity-20 transition-colors"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-700 mb-2">Idade</label>
+                <input
+                  type="text"
+                  name="idade"
+                  value={formData.idade}
+                  onChange={handleInputChange}
+                  placeholder="Digite a idade"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626] focus:ring-opacity-20 transition-colors"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-700 mb-2">Telefone</label>
+                <input
+                  type="text"
+                  name="telefone"
+                  value={formData.telefone}
+                  onChange={handleInputChange}
+                  placeholder="(00) 00000-0000"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626] focus:ring-opacity-20 transition-colors"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-700 mb-2">Endereço</label>
+                <input
+                  type="text"
+                  name="endereco"
+                  value={formData.endereco}
+                  onChange={handleInputChange}
+                  placeholder="Digite o endereço completo"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-[#dc2626] focus:ring-opacity-20 transition-colors"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#dc2626] hover:bg-[#b91c1c] text-white py-3 rounded-lg transition-colors font-medium"
+              >
+                Cadastrar {titulo.replace("Cadastro de ", "")}
+              </button>
+            </form>
+          </div>
+
+          {/* Lista de Membros - Lado Direito */}
+          <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                {icon}
+                <h2 className="text-lg text-gray-900">{titulo.replace("Cadastro de ", "")} Cadastrados</h2>
+              </div>
+              <span className="text-sm text-gray-600">Total: {membrosPorCategoria.length}</span>
+            </div>
+
+            {membrosPorCategoria.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                {icon}
+                <p className="mt-3">Nenhum membro cadastrado ainda.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="text-left text-sm text-gray-700 pb-3 pt-3 px-4 font-semibold">Nome</th>
+                      <th className="text-left text-sm text-gray-700 pb-3 pt-3 px-4 font-semibold">Idade</th>
+                      <th className="text-left text-sm text-gray-700 pb-3 pt-3 px-4 font-semibold">Telefone</th>
+                      <th className="text-left text-sm text-gray-700 pb-3 pt-3 px-4 font-semibold">Endereço</th>
+                      <th className="text-left text-sm text-gray-700 pb-3 pt-3 px-4 font-semibold">Data</th>
+                      <th className="text-left text-sm text-gray-700 pb-3 pt-3 px-4 font-semibold">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {membrosPorCategoria.map((membro) => (
+                      <tr
+                        key={membro.id}
+                        className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="py-4 px-4 text-sm text-gray-900">{membro.nome}</td>
+                        <td className="py-4 px-4 text-sm text-gray-900">{membro.idade}</td>
+                        <td className="py-4 px-4 text-sm text-gray-900">{membro.telefone}</td>
+                        <td className="py-4 px-4 text-sm text-gray-600">{membro.endereco}</td>
+                        <td className="py-4 px-4 text-sm text-gray-600">{membro.data}</td>
+                        <td className="py-4 px-4">
+                          <button
+                            onClick={() => handleDelete(membro.id)}
+                            className="text-red-600 hover:text-red-700 transition-colors"
+                            title="Remover membro"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
-        {aba === "qrcode" ? (
-          <AbaQRCode />
-        ) : (
-          <div className="two-col">
-            <Formulario tipo={aba} onAtualizar={carregarMembros} />
-            <Lista
-              tipo={aba}
-              membros={membrosFiltrados}
-              onAtualizar={carregarMembros}
-            />
+        {/* Seção de QR Code */}
+        {membrosPorCategoria.length > 0 && (
+          <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <QrCode className="w-5 h-5 text-[#dc2626]" />
+                <h3 className="text-lg text-gray-900">Exportar Todos os Membros via QR Code</h3>
+              </div>
+              <button
+                onClick={() => toggleQRCode(categoria)}
+                className="bg-[#dc2626] hover:bg-[#b91c1c] text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+              >
+                {qrCodeAtivo[categoria] ? "Ocultar QR Code" : "Gerar QR Code"}
+              </button>
+            </div>
+
+            {qrCodeAtivo[categoria] && (
+              <div className="flex flex-col items-center gap-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <QRCodeSVG value={qrData} size={250} level="H" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-900 mb-1">
+                    QR Code com {membrosPorCategoria.length} {titulo.replace("Cadastro de ", "").toLowerCase()}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Escaneie este código para importar todos os dados dos membros desta categoria
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
-    </>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-white text-gray-900">
+      {/* Header */}
+      <header className="border-b border-gray-200 px-6 py-4 bg-white shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-[#dc2626] px-4 py-2 rounded-lg font-semibold text-white">
+              ADAG
+            </div>
+            <h1 className="text-lg text-gray-700">Sistema de Cadastro de Membros</h1>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="bg-white border-2 border-[#dc2626] hover:bg-red-50 text-[#dc2626] px-5 py-2 rounded-lg transition-colors"
+            >
+              Cadastrar Visitante
+            </button>
+            <button className="bg-[#dc2626] hover:bg-[#b91c1c] text-white px-5 py-2 rounded-lg transition-colors">
+              Cadastrar Membro
+            </button>
+            <button
+              onClick={() => navigate("/cadastro-nao-evangelico")}
+              className="bg-white border-2 border-[#dc2626] hover:bg-red-50 text-[#dc2626] px-5 py-2 rounded-lg transition-colors"
+            >
+              Cadastrar Não Evangélico
+            </button>
+            <button
+              onClick={() => navigate("/painel-pastor")}
+              className="bg-white border-2 border-[#dc2626] hover:bg-red-50 text-[#dc2626] px-5 py-2 rounded-lg transition-colors"
+            >
+              Painel do Pastor
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="p-6 flex items-start justify-center bg-gray-50">
+        <div className="w-full max-w-7xl">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-5 mb-6 bg-white border border-gray-200 p-1 rounded-lg">
+              <TabsTrigger
+                value="criancas"
+                className="data-[state=active]:bg-[#dc2626] data-[state=active]:text-white text-gray-700"
+              >
+                Crianças
+              </TabsTrigger>
+              <TabsTrigger
+                value="jovens"
+                className="data-[state=active]:bg-[#dc2626] data-[state=active]:text-white text-gray-700"
+              >
+                Jovens
+              </TabsTrigger>
+              <TabsTrigger
+                value="irmas"
+                className="data-[state=active]:bg-[#dc2626] data-[state=active]:text-white text-gray-700"
+              >
+                Irmãs
+              </TabsTrigger>
+              <TabsTrigger
+                value="varoes"
+                className="data-[state=active]:bg-[#dc2626] data-[state=active]:text-white text-gray-700"
+              >
+                Varões
+              </TabsTrigger>
+              <TabsTrigger
+                value="geral"
+                className="data-[state=active]:bg-[#dc2626] data-[state=active]:text-white text-gray-700"
+              >
+                Cadastro Geral
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="criancas">
+              {renderForm(
+                formCrianca,
+                setFormCrianca,
+                "crianca",
+                "Cadastro de Crianças",
+                <Baby className="w-5 h-5 text-[#dc2626]" />
+              )}
+            </TabsContent>
+
+            <TabsContent value="jovens">
+              {renderForm(
+                formJovem,
+                setFormJovem,
+                "jovem",
+                "Cadastro de Jovens",
+                <UsersGroup className="w-5 h-5 text-[#dc2626]" />
+              )}
+            </TabsContent>
+
+            <TabsContent value="irmas">
+              {renderForm(
+                formIrma,
+                setFormIrma,
+                "irma",
+                "Cadastro de Irmãs",
+                <UserCircle className="w-5 h-5 text-[#dc2626]" />
+              )}
+            </TabsContent>
+
+            <TabsContent value="varoes">
+              {renderForm(
+                formVarao,
+                setFormVarao,
+                "varao",
+                "Cadastro de Varões",
+                <UserPlus className="w-5 h-5 text-[#dc2626]" />
+              )}
+            </TabsContent>
+
+            <TabsContent value="geral">
+              {renderForm(
+                formGeral,
+                setFormGeral,
+                "geral",
+                "Cadastro Geral",
+                <Users className="w-5 h-5 text-[#dc2626]" />
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
+    </div>
   );
 }
