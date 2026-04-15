@@ -149,9 +149,9 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar }) {
         body: JSON.stringify({ ...form, tipo }),
       });
       if (!res.ok) throw new Error();
-      setMsg(`✅ ${abaAtual.singular} cadastrado(a) com sucesso!`);
+      setMsg(` ${abaAtual.singular} cadastrado(a) com sucesso!`);
     } catch {
-      setMsg(`💾 ${abaAtual.singular} salvo(a) localmente (sem conexão com servidor).`);
+      setMsg(` ${abaAtual.singular} salvo(a) localmente (sem conexão com servidor).`);
     }
 
     const agora = new Date();
