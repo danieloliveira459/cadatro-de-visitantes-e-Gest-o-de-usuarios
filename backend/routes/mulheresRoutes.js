@@ -8,7 +8,9 @@ import {
 const router = express.Router();
 
 router.get("/", listarMulheres);
+
 router.post("/", criarMulher);
+
 router.delete("/:id", deletarMulher);
 
 export default router;
