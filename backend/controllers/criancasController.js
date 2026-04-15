@@ -4,7 +4,7 @@ import { db } from "../config/db.js";
 export const listarCrianças = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM criancas; ORDER BY data DESC"
+      "SELECT * FROM crianca; ORDER BY data DESC"
     );
 
     return res.status(200).json(rows);
@@ -46,7 +46,7 @@ export const criarCrianca = async (req, res) => {
     });
 
     const [result] = await db.query(
-      `INSERT INTO criancas 
+      `INSERT INTO crianca
       (nome, idade, telefone, endereco)
       VALUES (?, ?, ?, ?)`,
       [
@@ -83,7 +83,7 @@ export const deletarCrianca = async (req, res) => {
     }
 
     const [result] = await db.query(
-      "DELETE FROM criancas WHERE id = ?",
+      "DELETE FROM crianca WHERE id = ?",
       [id]
     );
 

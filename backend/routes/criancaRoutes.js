@@ -3,7 +3,7 @@ import {
   listarCrianca,
   criarCrianca,
   deletarCrianca
-} from "../controllers/criancaController.js";
+} from "../controllers/criancasController.js";
 
 const router = express.Router();
 

@@ -14,7 +14,7 @@ import authRoutes from "./routes/authRoutes.js";
 import cadastroGeralRoutes from "./routes/cadastroGeralRoutes.js";
 import criancas from "./routes/criancaRoutes.js";
 import jovensRoutes from "./routes/jovensRoutes.js";
-import irmasRoutes from "./routes/irmasRoutes.js";
+import irmas from "./routes/irmaRoutes.js";
 import homensRoutes from "./routes/homensRoutes.js";
 
 const app = express();
