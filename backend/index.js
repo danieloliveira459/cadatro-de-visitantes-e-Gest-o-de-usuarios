@@ -10,7 +10,7 @@ import avisoRoutes from "./routes/avisoRoutes.js";
 import programacaoRoutes from "./routes/programacaoRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
-// ✅ ROTAS MEMBROS (PADRONIZADO)
+//  ROTAS MEMBROS (PADRONIZADO)
 import cadastroGeralRoutes from "./routes/cadastroGeralRoutes.js";
 import criancasRoutes from "./routes/criancasRoutes.js";
 import jovensRoutes from "./routes/jovensRoutes.js";
