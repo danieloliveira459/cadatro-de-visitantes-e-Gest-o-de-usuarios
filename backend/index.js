@@ -10,10 +10,10 @@ import avisoRoutes from "./routes/avisoRoutes.js";
 import programacaoRoutes from "./routes/programacaoRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
-//  ROTAS MEMBROS (PADRONIZADO)
+// ROTAS MEMBROS (PADRONIZADO)
 import cadastroGeralRoutes from "./routes/cadastroGeralRoutes.js";
 import criancasRoutes from "./routes/criancasRoutes.js";
-import jovensRoutes from "./routes/jovensRoutes.js";
+import jovensRoutes from "./routes/jovensRoutes.js"; // corrigido para plural
 import irmasRoutes from "./routes/irmasRoutes.js";
 import homensRoutes from "./routes/homensRoutes.js";
 
@@ -50,7 +50,7 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/cadastro-geral", cadastroGeralRoutes);
 app.use("/api/criancas", criancasRoutes);
-app.use("/api/jovens", jovensRoutes);
+app.use("/api/jovens", jovensRoutes); // corrigido
 app.use("/api/irmas", irmasRoutes);
 app.use("/api/homens", homensRoutes);
 
