@@ -1,10 +1,10 @@
 import { db } from "../config/db.js";
 
 // LISTAR
-export const listarIrmas = async (req, res) => {
+export const listarMulheres = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM irmas ORDER BY data DESC"
+      "SELECT * FROM mulheres ORDER BY data DESC"
     );
 
     return res.status(200).json(rows);
@@ -31,7 +31,7 @@ export const criarIrma = async (req, res) => {
     console.log("BODY TRATADO:", { nome, idade, telefone, endereco, observacoes });
 
     const [result] = await db.query(
-      `INSERT INTO irmas (nome, idade, telefone, endereco, observacoes)
+      `INSERT INT mulheres (nome, idade, telefone, endereco, observacoes)
        VALUES (?, ?, ?, ?, ?)`,
       [nome, idade, telefone, endereco, observacoes]
     );
@@ -56,7 +56,7 @@ export const deletarIrma = async (req, res) => {
       return res.status(400).json({ error: "ID é obrigatório" });
     }
 
-    const [result] = await db.query("DELETE FROM irmas WHERE id = ?", [id]);
+    const [result] = await db.query("DELETE FROM mulheres WHERE id = ?", [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Registro não encontrado" });

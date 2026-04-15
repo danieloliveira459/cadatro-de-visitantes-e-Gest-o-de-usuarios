@@ -14,7 +14,7 @@ import authRoutes from "./routes/authRoutes.js";
 import cadastroGeralRoutes from "./routes/cadastroGeralRoutes.js";
 import criancasRoutes from "./routes/criancasRoutes.js";
 import jovensRoutes from "./routes/jovensRoutes.js"; // corrigido para plural
-import irmasRoutes from "./routes/irmasRoutes.js";
+import mulheresRoutes from "./routes/mulheresRoutes.js"
 import homensRoutes from "./routes/homensRoutes.js";
 
 const app = express();
@@ -51,7 +51,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/cadastro-geral", cadastroGeralRoutes);
 app.use("/api/criancas", criancasRoutes);
 app.use("/api/jovens", jovensRoutes); // corrigido
-app.use("/api/irmas", irmasRoutes);
+app.use("/api/mulheres", mulheresRoutes);
 app.use("/api/homens", homensRoutes);
 
 /* ================= TESTE API ================= */

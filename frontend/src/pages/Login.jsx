@@ -9,7 +9,7 @@ const BASE_URL =
   "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
 
 if (!import.meta.env.VITE_API_URL) {
-  console.warn("⚠️ VITE_API_URL não definida. Usando fallback.");
+  console.warn("VITE_API_URL não definida. Usando fallback.");
 }
 
 const API = `${BASE_URL}/api/auth`;
@@ -221,7 +221,8 @@ export default function Login() {
             <input type="password" placeholder="Senha" value={senhaCad} onChange={(e) => setSenhaCad(e.target.value)} />
 
             <select value={nivel} onChange={(e) => setNivel(e.target.value)}>
-              <option value="Diácono(@)">Diácono(@)</option>
+              <option value="Diácono">Diácono</option>
+              <option value="Diaconisa">Diaconisa</option>
               <option value="PASTOR">Pastor</option>
               <option value="VICE PASTOR">Vice Pastor</option>
               <option value="PASTOR DIRIGENTE">Pastor Dirigente</option>
