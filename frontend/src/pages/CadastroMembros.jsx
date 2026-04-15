@@ -79,7 +79,7 @@ function QRCodeMembros({ tipo, membros }) {
   );
 }
 
-/* ================= FORMULÁRIO + LISTA ================= */
+/* ================= FORMULÁRIO + TABELA ================= */
 function FormularioComLista({ tipo, membros, onCadastrar, onDeletar }) {
   const [form, setForm] = useState(formInicial());
   const [loading, setLoading] = useState(false);
@@ -112,7 +112,11 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar }) {
       setMsg(` ${abaAtual.singular} salvo(a) localmente (sem conexão com servidor).`);
     }
 
-    onCadastrar({ ...form, id: Date.now() });
+    // Guarda data/hora atual junto ao membro
+    const agora = new Date();
+    const dataFormatada = agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+    onCadastrar({ ...form, id: Date.now(), data: dataFormatada });
     setForm(formInicial());
     setLoading(false);
     setTimeout(() => setMsg(""), 4000);
@@ -158,7 +162,7 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar }) {
         <QRCodeMembros tipo={tipo} membros={membros} />
       </div>
 
-      {/* --- CARD LISTA --- */}
+      {/* --- CARD TABELA --- */}
       <div className="card-padrao">
         <div className="list-header">
           <h2 className="titulo-card">
@@ -173,22 +177,40 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar }) {
             <p>Nenhum membro cadastrado ainda.</p>
           </div>
         ) : (
-          membros.map((m) => (
-            <div className="member-item" key={m.id}>
-              <div className="member-avatar">{abaAtual?.icon}</div>
-              <div className="member-info">
-                <p className="member-name">{m.nome}</p>
-                <p className="member-details">
-                  {m.idade && `🎂 ${m.idade} anos`}
-                  {m.telefone && `  📞 ${m.telefone}`}
-                  {m.endereco && <><br />📍 {m.endereco}</>}
-                </p>
-              </div>
-              <button className="member-delete" onClick={() => onDeletar(tipo, m.id)} title="Remover">
-                <FaTrash />
-              </button>
-            </div>
-          ))
+          <div className="table-wrapper">
+            <table className="geral-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Idade</th>
+                  <th>Telefone</th>
+                  <th>Endereço</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {membros.map((m) => (
+                  <tr key={m.id}>
+                    <td><strong>{m.nome}</strong></td>
+                    <td>{m.idade || "—"}</td>
+                    <td>{m.telefone || "—"}</td>
+                    <td>{m.endereco || "—"}</td>
+                    <td style={{ whiteSpace: "nowrap", fontSize: 13 }}>{m.data || "—"}</td>
+                    <td>
+                      <button
+                        className="member-delete"
+                        onClick={() => onDeletar(tipo, m.id)}
+                        title="Remover"
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
@@ -236,6 +258,7 @@ function CadastroGeral({ todos }) {
                   <th>Idade</th>
                   <th>Telefone</th>
                   <th>Endereço</th>
+                  <th>Data</th>
                 </tr>
               </thead>
               <tbody>
@@ -247,6 +270,7 @@ function CadastroGeral({ todos }) {
                       <td>{m.idade || "—"}</td>
                       <td>{m.telefone || "—"}</td>
                       <td>{m.endereco || "—"}</td>
+                      <td style={{ whiteSpace: "nowrap", fontSize: 13 }}>{m.data || "—"}</td>
                     </tr>
                   ))
                 )}
@@ -263,7 +287,6 @@ function CadastroGeral({ todos }) {
 export default function CadastroMembros() {
   const [aba, setAba] = useState("criancas");
 
-  //  Chaves espelham EXATAMENTE os ids de ABAS (sem "irmas", com "mulheres")
   const [todos, setTodos] = useState({
     criancas: [],
     jovens:   [],
