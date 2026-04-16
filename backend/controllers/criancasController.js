@@ -1,10 +1,9 @@
 import { db } from "../config/db.js";
 
-// LISTAR
 export const listarCriancas = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM crianca ORDER BY data DESC"
+      "SELECT * FROM crianca ORDER BY data_nascimento DESC"
     );
 
     return res.status(200).json(rows);
@@ -14,26 +13,29 @@ export const listarCriancas = async (req, res) => {
   }
 };
 
-// CRIAR
 export const criarCrianca = async (req, res) => {
   try {
-    let { nome, idade, telefone, endereco, observacoes } = req.body;
+    let { nome, cpf, naturalidade, data_nascimento, foto, cargo } = req.body;
 
     if (!nome || nome.trim() === "") {
       return res.status(400).json({ error: "Nome é obrigatório" });
     }
 
-    nome = nome.trim();
-    endereco = endereco?.trim() || null;
-    observacoes = observacoes?.trim() || null;
-    telefone = telefone ? telefone.replace(/\D/g, "") : null;
+    if (!cpf || cpf.trim() === "") {
+      return res.status(400).json({ error: "CPF é obrigatório" });
+    }
 
-    console.log("BODY TRATADO:", { nome, idade, telefone, endereco, observacoes });
+    nome = nome.trim();
+    cpf = cpf.replace(/\D/g, "");
+    naturalidade = naturalidade?.trim() || null;
+    data_nascimento = data_nascimento || null;
+    foto = foto || null;
+    cargo = cargo?.trim() || null;
 
     const [result] = await db.query(
-      `INSERT INTO crianca (nome, idade, telefone, endereco, observacoes)
-       VALUES (?, ?, ?, ?, ?)`,
-      [nome, idade, telefone, endereco, observacoes]
+      `INSERT INTO crianca (nome, cpf, naturalidade, data_nascimento, foto, cargo)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [nome, cpf, naturalidade, data_nascimento, foto, cargo]
     );
 
     return res.status(201).json({
@@ -47,7 +49,6 @@ export const criarCrianca = async (req, res) => {
   }
 };
 
-// DELETAR
 export const deletarCrianca = async (req, res) => {
   try {
     const { id } = req.params;

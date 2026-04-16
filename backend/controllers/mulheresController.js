@@ -1,13 +1,15 @@
 import { db } from "../config/db.js";
 
-/* ================= LISTAR ================= */
 export const listarMulheres = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM mulheres ORDER BY data DESC"
+      "SELECT * FROM mulheres ORDER BY data_nascimento DESC"
     );
 
-    return res.status(200).json(rows);
+    return res.status(200).json({
+      success: true,
+      data: rows,
+    });
   } catch (err) {
     console.error("ERRO LISTAR:", err);
     return res.status(500).json({
@@ -17,12 +19,10 @@ export const listarMulheres = async (req, res) => {
   }
 };
 
-/* ================= CRIAR ================= */
 export const criarMulher = async (req, res) => {
   try {
-    let { nome, idade, telefone, endereco, observacoes } = req.body;
+    let { nome, cpf, naturalidade, data_nascimento, foto, cargo } = req.body;
 
-    // 🔥 VALIDAÇÃO
     if (!nome || nome.trim() === "") {
       return res.status(400).json({
         success: false,
@@ -30,26 +30,24 @@ export const criarMulher = async (req, res) => {
       });
     }
 
-    // 🔥 TRATAMENTO
+    if (!cpf || cpf.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        error: "CPF é obrigatório",
+      });
+    }
+
     nome = nome.trim();
-    idade = idade ? Number(idade) : null;
-    telefone = telefone ? telefone.replace(/\D/g, "") : null;
-    endereco = endereco?.trim() || null;
-    observacoes = observacoes?.trim() || null;
+    cpf = cpf.replace(/\D/g, "");
+    naturalidade = naturalidade?.trim() || null;
+    data_nascimento = data_nascimento || null;
+    foto = foto || null;
+    cargo = cargo?.trim() || null;
 
-    console.log("BODY TRATADO:", {
-      nome,
-      idade,
-      telefone,
-      endereco,
-      observacoes,
-    });
-
-    // 🔥 INSERT CORRIGIDO
     const [result] = await db.query(
-      `INSERT INTO mulheres (nome, idade, telefone, endereco, observacoes)
-       VALUES (?, ?, ?, ?, ?)`,
-      [nome, idade, telefone, endereco, observacoes]
+      `INSERT INTO mulheres (nome, cpf, naturalidade, data_nascimento, foto, cargo)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [nome, cpf, naturalidade, data_nascimento, foto, cargo]
     );
 
     return res.status(201).json({
@@ -66,7 +64,6 @@ export const criarMulher = async (req, res) => {
   }
 };
 
-/* ================= DELETAR ================= */
 export const deletarMulher = async (req, res) => {
   try {
     const { id } = req.params;
