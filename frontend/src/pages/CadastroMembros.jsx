@@ -26,6 +26,16 @@ const BASE_URL =
   import.meta.env.VITE_API_URL ||
   "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
 
+// Mapeia o id da aba para a rota real da API
+const ROTA_POR_TIPO = {
+  criancas: "criancas",
+  jovens:   "jovens",
+  mulheres: "mulheres",
+  homens:   "homens",
+};
+
+const apiUrl = (tipo) => `${BASE_URL}/api/${ROTA_POR_TIPO[tipo]}`;
+
 const formInicial = () => ({
   nome: "",
   cpf: "",
@@ -181,10 +191,10 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
     setMsg({ texto: "", erro: false });
 
     try {
-      const res = await fetch(`${BASE_URL}/api/membros`, {
+      const res = await fetch(apiUrl(tipo), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, tipo }),
+        body: JSON.stringify(form),
       });
 
       if (!res.ok) {
@@ -200,9 +210,9 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
         : new Date().toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
       onCadastrar({ ...salvo, data: dataFormatada });
-      setMsg({ texto: ` ${abaAtual.singular} cadastrado(a) com sucesso!`, erro: false });
+      setMsg({ texto: `✅ ${abaAtual.singular} cadastrado(a) com sucesso!`, erro: false });
     } catch (err) {
-      setMsg({ texto: ` ${err.message}`, erro: true });
+      setMsg({ texto: `❌ ${err.message}`, erro: true });
     }
 
     setForm(formInicial());
@@ -548,7 +558,7 @@ export default function CadastroMembros() {
   const carregarMembros = useCallback(async (tipo) => {
     setLoadingLista(true);
     try {
-      const res = await fetch(`${BASE_URL}/api/membros?tipo=${tipo}`);
+      const res = await fetch(apiUrl(tipo));
       if (!res.ok) throw new Error("Erro ao buscar membros.");
       const data = await res.json();
 
@@ -575,7 +585,7 @@ export default function CadastroMembros() {
       const tipos = ["criancas", "jovens", "mulheres", "homens"];
       const resultados = await Promise.all(
         tipos.map((t) =>
-          fetch(`${BASE_URL}/api/membros?tipo=${t}`)
+          fetch(apiUrl(t))
             .then((r) => r.ok ? r.json() : [])
             .then((data) =>
               data.map((m) => ({
@@ -620,7 +630,7 @@ export default function CadastroMembros() {
   // Deleta via API e remove do estado local
   const handleDeletar = async (tipo, id) => {
     try {
-      const res = await fetch(`${BASE_URL}/api/membros/${id}`, { method: "DELETE" });
+      const res = await fetch(`${apiUrl(tipo)}/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Erro ao deletar.");
       setTodos((prev) => ({
         ...prev,
