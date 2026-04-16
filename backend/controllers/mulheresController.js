@@ -1,46 +1,37 @@
 import { db } from "../config/db.js";
 
+function normalizarMembro(m) {
+  return {
+    ...m,
+    dataNascimento: m.data_nascimento ?? m.dataNascimento ?? null,
+    createdAt: m.created_at ?? m.createdAt ?? null,
+  };
+}
+
 export const listarMulheres = async (req, res) => {
   try {
     const [rows] = await db.query(
       "SELECT * FROM mulheres ORDER BY data_nascimento DESC"
     );
-
-    return res.status(200).json({
-      success: true,
-      data: rows,
-    });
+    return res.status(200).json(rows.map(normalizarMembro));
   } catch (err) {
     console.error("ERRO LISTAR:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Erro ao listar registros",
-    });
+    return res.status(500).json({ error: "Erro ao listar registros" });
   }
 };
 
 export const criarMulher = async (req, res) => {
   try {
-    let { nome, cpf, naturalidade, data_nascimento, foto, cargo } = req.body;
+    let { nome, cpf, naturalidade, dataNascimento, foto, cargo } = req.body;
 
     if (!nome || nome.trim() === "") {
-      return res.status(400).json({
-        success: false,
-        error: "Nome é obrigatório",
-      });
-    }
-
-    if (!cpf || cpf.trim() === "") {
-      return res.status(400).json({
-        success: false,
-        error: "CPF é obrigatório",
-      });
+      return res.status(400).json({ error: "Nome é obrigatório" });
     }
 
     nome = nome.trim();
-    cpf = cpf.replace(/\D/g, "");
+    cpf = cpf ? cpf.replace(/\D/g, "") : null;
     naturalidade = naturalidade?.trim() || null;
-    data_nascimento = data_nascimento || null;
+    const data_nascimento = dataNascimento || null;
     foto = foto || null;
     cargo = cargo?.trim() || null;
 
@@ -50,17 +41,12 @@ export const criarMulher = async (req, res) => {
       [nome, cpf, naturalidade, data_nascimento, foto, cargo]
     );
 
-    return res.status(201).json({
-      success: true,
-      msg: "Registro salvo com sucesso",
-      id: result.insertId,
-    });
+    const [rows] = await db.query("SELECT * FROM mulheres WHERE id = ?", [result.insertId]);
+    return res.status(201).json(normalizarMembro(rows[0]));
+
   } catch (err) {
     console.error("ERRO CRIAR:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Erro ao cadastrar",
-    });
+    return res.status(500).json({ error: "Erro ao cadastrar" });
   }
 };
 
@@ -69,33 +55,19 @@ export const deletarMulher = async (req, res) => {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({
-        success: false,
-        error: "ID é obrigatório",
-      });
+      return res.status(400).json({ error: "ID é obrigatório" });
     }
 
-    const [result] = await db.query(
-      "DELETE FROM mulheres WHERE id = ?",
-      [id]
-    );
+    const [result] = await db.query("DELETE FROM mulheres WHERE id = ?", [id]);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({
-        success: false,
-        error: "Registro não encontrado",
-      });
+      return res.status(404).json({ error: "Registro não encontrado" });
     }
 
-    return res.status(200).json({
-      success: true,
-      msg: "Excluído com sucesso",
-    });
+    return res.status(200).json({ msg: "Excluído com sucesso" });
+
   } catch (err) {
     console.error("ERRO DELETAR:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Erro ao deletar",
-    });
+    return res.status(500).json({ error: "Erro ao deletar" });
   }
 };
