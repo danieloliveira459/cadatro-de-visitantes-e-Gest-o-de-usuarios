@@ -1,9 +1,16 @@
 import { db } from "../config/db.js";
 
 function normalizarMembro(m) {
+  let dataNascimento = m.data_nascimento ?? m.dataNascimento ?? null;
+  if (dataNascimento instanceof Date) {
+    dataNascimento = dataNascimento.toISOString().split("T")[0];
+  } else if (typeof dataNascimento === "string") {
+    dataNascimento = dataNascimento.split("T")[0];
+  }
+
   return {
     ...m,
-    dataNascimento: m.data_nascimento ?? m.dataNascimento ?? null,
+    dataNascimento,
     createdAt: m.created_at ?? m.createdAt ?? null,
   };
 }
