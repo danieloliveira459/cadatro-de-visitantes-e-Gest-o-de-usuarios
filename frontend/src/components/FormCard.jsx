@@ -13,7 +13,7 @@ export default function FormCard() {
   const [igreja, setIgreja] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ Máscara de telefone
+  //  Máscara de telefone
   const formatTelefone = (value) => {
     value = value.replace(/\D/g, "");
 
@@ -26,7 +26,7 @@ export default function FormCard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ Apenas nome obrigatório
+    //  Apenas nome obrigatório
     if (!nome.trim()) {
       alert("O nome é obrigatório!");
       return;
@@ -35,7 +35,7 @@ export default function FormCard() {
     try {
       setLoading(true);
 
-      // ✅ Sempre salva em visitantes
+      //  Sempre salva em visitantes
       const response = await fetch(`${API}/api/visitantes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
