@@ -10,23 +10,23 @@ import {
   FaFilePdf,
   FaCamera,
 } from "react-icons/fa6";
-import QRCode from "react-qr-code";
+import { QRCode } from "react-qr-code";
 import "./CadastroMembros.css";
 import Header from "../components/Header";
 
+//  CORRIGIDO: Guardamos o componente (Icon) em vez do elemento JSX (<Icon />)
 const ABAS = [
-  { id: "criancas", label: "Crianças",      singular: "Criança", icon: <FaChildren />    },
-  { id: "jovens",   label: "Jovens",         singular: "Jovem",   icon: <FaPerson />      },
-  { id: "mulheres", label: "Mulheres",       singular: "Mulher",  icon: <FaPersonDress /> },
-  { id: "homens",   label: "Homens",         singular: "Homem",   icon: <FaPerson />      },
-  { id: "geral",    label: "Cadastro Geral", singular: null,      icon: <FaUsers />       },
+  { id: "criancas", label: "Crianças",      singular: "Criança", Icon: FaChildren    },
+  { id: "jovens",   label: "Jovens",         singular: "Jovem",   Icon: FaPerson      },
+  { id: "mulheres", label: "Mulheres",       singular: "Mulher",  Icon: FaPersonDress },
+  { id: "homens",   label: "Homens",         singular: "Homem",   Icon: FaPerson      },
+  { id: "geral",    label: "Cadastro Geral", singular: null,      Icon: FaUsers       },
 ];
 
 const BASE_URL =
   import.meta.env.VITE_API_URL ||
   "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
 
-// Mapeia o id da aba para a rota real da API
 const ROTA_POR_TIPO = {
   criancas: "criancas",
   jovens:   "jovens",
@@ -60,6 +60,31 @@ function ocultarCPF(cpf) {
   const apenasDigitos = cpf.replace(/\D/g, "");
   if (apenasDigitos.length === 0) return "—";
   return "***.***.***-**";
+}
+
+/* ================= COMPRESSOR DE IMAGEM ================= */
+function comprimirImagem(file, maxWidth = 800, qualidade = 0.7) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement("canvas");
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      const base64 = canvas.toDataURL("image/jpeg", qualidade);
+      URL.revokeObjectURL(url);
+      resolve(base64);
+    };
+
+    img.src = url;
+  });
 }
 
 /* ================= EXPORTAR PDF ================= */
@@ -160,11 +185,12 @@ function QRCodeMembros({ tipo, membros }) {
 /* ================= FORMULÁRIO + TABELA ================= */
 function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingLista }) {
   const [form, setForm] = useState(formInicial());
-  const [loading, setLoading]     = useState(false);
+  const [loading, setLoading]       = useState(false);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [msg, setMsg] = useState({ texto: "", erro: false });
   const fotoInputRef = useRef(null);
 
+  //  Usa o componente Icon em vez do elemento JSX
   const abaAtual = ABAS.find((a) => a.id === tipo);
 
   useEffect(() => {
@@ -177,12 +203,12 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
     setForm((prev) => ({ ...prev, [name]: name === "cpf" ? formatarCPF(value) : value }));
   };
 
-  const handleFoto = (e) => {
+  //  CORRIGIDO: comprime a imagem antes de armazenar em base64
+  const handleFoto = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setForm((prev) => ({ ...prev, foto: reader.result }));
-    reader.readAsDataURL(file);
+    const fotoComprimida = await comprimirImagem(file, 800, 0.7);
+    setForm((prev) => ({ ...prev, foto: fotoComprimida }));
   };
 
   const handleSubmit = async (e) => {
@@ -204,15 +230,14 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
 
       const salvo = await res.json();
 
-      // Normaliza data de cadastro para exibição
       const dataFormatada = salvo.createdAt
         ? new Date(salvo.createdAt).toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit", year: "numeric" })
         : new Date().toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
       onCadastrar({ ...salvo, data: dataFormatada });
-      setMsg({ texto: `✅ ${abaAtual.singular} cadastrado(a) com sucesso!`, erro: false });
+      setMsg({ texto: ` ${abaAtual.singular} cadastrado(a) com sucesso!`, erro: false });
     } catch (err) {
-      setMsg({ texto: `❌ ${err.message}`, erro: true });
+      setMsg({ texto: ` ${err.message}`, erro: true });
     }
 
     setForm(formInicial());
@@ -240,12 +265,15 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
     setLoadingPdf(false);
   };
 
+  //  Instancia o ícone como componente
+  const IconeAba = abaAtual?.Icon;
+
   return (
     <div className="two-col">
       {/* --- CARD FORMULÁRIO --- */}
       <div className="card-padrao">
         <h2 className="titulo-card">
-          {abaAtual?.icon} Cadastro de {abaAtual?.label}
+          {IconeAba && <IconeAba />} Cadastro de {abaAtual?.label}
         </h2>
 
         <div className="total-box">
@@ -333,7 +361,7 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
       <div className="card-padrao">
         <div className="list-header">
           <h2 className="titulo-card">
-            {abaAtual?.icon} {abaAtual?.label} Cadastrados
+            {IconeAba && <IconeAba />} {abaAtual?.label} Cadastrados
           </h2>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <span className="list-total-badge">Total: {membros.length}</span>
@@ -356,7 +384,7 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
           </div>
         ) : membros.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">{abaAtual?.icon}</div>
+            <div className="empty-icon">{IconeAba && <IconeAba />}</div>
             <p>Nenhum membro cadastrado ainda.</p>
           </div>
         ) : (
@@ -452,13 +480,17 @@ function CadastroGeral({ todos, loadingGeral }) {
       <div className="card-padrao" style={{ marginBottom: 24 }}>
         <h2 className="titulo-card"><FaUsers /> Resumo Geral</h2>
         <div className="resumo-grid">
-          {abas.map((a) => (
-            <div className="resumo-item" key={a.id}>
-              <span className="resumo-icon">{a.icon}</span>
-              <p className="resumo-label">{a.label}</p>
-              <p className="resumo-numero">{todos[a.id]?.length ?? 0}</p>
-            </div>
-          ))}
+          {abas.map((a) => {
+            // ✅ Instancia o ícone como componente
+            const IconeAba = a.Icon;
+            return (
+              <div className="resumo-item" key={a.id}>
+                <span className="resumo-icon"><IconeAba /></span>
+                <p className="resumo-label">{a.label}</p>
+                <p className="resumo-numero">{todos[a.id]?.length ?? 0}</p>
+              </div>
+            );
+          })}
         </div>
         <div className="total-geral-row">
           <span>Total Geral:</span>
@@ -506,8 +538,10 @@ function CadastroGeral({ todos, loadingGeral }) {
                 </tr>
               </thead>
               <tbody>
-                {abas.flatMap((a) =>
-                  (todos[a.id] ?? []).map((m) => (
+                {abas.flatMap((a) => {
+                  //  Instancia o ícone como componente
+                  const IconeAba = a.Icon;
+                  return (todos[a.id] ?? []).map((m) => (
                     <tr key={m._id ?? m.id}>
                       <td>
                         {m.foto ? (
@@ -519,7 +553,8 @@ function CadastroGeral({ todos, loadingGeral }) {
                         )}
                       </td>
                       <td><strong>{m.nome}</strong></td>
-                      <td><span className="badge-tipo">{a.icon} {a.singular}</span></td>
+                      {/*  Renderiza o ícone corretamente */}
+                      <td><span className="badge-tipo"><IconeAba /> {a.singular}</span></td>
                       <td>{ocultarCPF(m.cpf)}</td>
                       <td>{m.naturalidade || "—"}</td>
                       <td style={{ whiteSpace: "nowrap" }}>
@@ -530,8 +565,8 @@ function CadastroGeral({ todos, loadingGeral }) {
                       <td>{m.cargo || "—"}</td>
                       <td style={{ whiteSpace: "nowrap", fontSize: 12 }}>{m.data || "—"}</td>
                     </tr>
-                  ))
-                )}
+                  ));
+                })}
               </tbody>
             </table>
           </div>
@@ -554,7 +589,6 @@ export default function CadastroMembros() {
     homens:   [],
   });
 
-  // Carrega membros de uma aba específica da API
   const carregarMembros = useCallback(async (tipo) => {
     setLoadingLista(true);
     try {
@@ -562,7 +596,6 @@ export default function CadastroMembros() {
       if (!res.ok) throw new Error("Erro ao buscar membros.");
       const data = await res.json();
 
-      // Normaliza campo "data" de exibição a partir de createdAt
       const normalizado = data.map((m) => ({
         ...m,
         data: m.createdAt
@@ -578,7 +611,6 @@ export default function CadastroMembros() {
     }
   }, []);
 
-  // Carrega todos ao entrar na aba geral
   const carregarTodos = useCallback(async () => {
     setLoadingGeral(true);
     try {
@@ -610,7 +642,6 @@ export default function CadastroMembros() {
     }
   }, []);
 
-  // Recarrega ao trocar de aba
   useEffect(() => {
     if (aba === "geral") {
       carregarTodos();
@@ -619,7 +650,6 @@ export default function CadastroMembros() {
     }
   }, [aba, carregarMembros, carregarTodos]);
 
-  // Após cadastro bem-sucedido, adiciona o retorno da API ao estado local
   const handleCadastrar = (tipo, membroSalvo) => {
     setTodos((prev) => ({
       ...prev,
@@ -627,7 +657,6 @@ export default function CadastroMembros() {
     }));
   };
 
-  // Deleta via API e remove do estado local
   const handleDeletar = async (tipo, id) => {
     try {
       const res = await fetch(`${apiUrl(tipo)}/${id}`, { method: "DELETE" });
@@ -661,15 +690,19 @@ export default function CadastroMembros() {
       <Header />
       <div className="membros-container">
         <div className="tabs">
-          {ABAS.map((a) => (
-            <button
-              key={a.id}
-              className={aba === a.id ? "tab ativa" : "tab"}
-              onClick={() => setAba(a.id)}
-            >
-              {a.icon} {a.label}
-            </button>
-          ))}
+          {ABAS.map((a) => {
+            //  Instancia o ícone como componente nas tabs
+            const IconeAba = a.Icon;
+            return (
+              <button
+                key={a.id}
+                className={aba === a.id ? "tab ativa" : "tab"}
+                onClick={() => setAba(a.id)}
+              >
+                <IconeAba /> {a.label}
+              </button>
+            );
+          })}
         </div>
         <div className="membros-content">
           {renderConteudo()}
@@ -678,4 +711,3 @@ export default function CadastroMembros() {
     </>
   );
 }
-//
