@@ -10,6 +10,7 @@ import ProtectedRoute from "./pages/ProtectedRoute";
 import AceitaramJesus from "./pages/AceitaramJesus";
 import ResetPassword from "./pages/ResetPassword"; 
 import Membros from "./pages/CadastroMembros";
+import Qrcode from "./pages/QrExport";
 
 // FUNÇÃO SEGURA
 function getUsuario() {
@@ -102,6 +103,16 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["ADM","PASTOR","VICE","DIRIGENTE","ATENDENTE"]}>
               <Membros />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rota QR code */}
+        <Route
+          path="/qrcode"
+          element={
+            <ProtectedRoute allowedRoles={["ADM","PASTOR","VICE","DIRIGENTE","ATENDENTE"]}>
+              <Qrcode />
             </ProtectedRoute>
           }
         />

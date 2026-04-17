@@ -131,7 +131,6 @@ async function exportarPDF({ titulo, colunas, linhas, nomeArquivo }) {
 
   doc.save(nomeArquivo);
 }
-
 /* ================= QR CODE DOS MEMBROS DA ABA ================= */
 function QRCodeMembros({ tipo, membros }) {
   const [aberto, setAberto] = useState(false);
@@ -172,7 +171,7 @@ function QRCodeMembros({ tipo, membros }) {
               </p>
               <QRCode value={payload} size={180} />
               <button className="btn-secundario" onClick={baixar} style={{ marginTop: 8 }}>
-                <FaDownload /> Baixar SVG
+                <FaDownload /> Baixar QR code
               </button>
             </>
           )}
