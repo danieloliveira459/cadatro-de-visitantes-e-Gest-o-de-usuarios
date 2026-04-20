@@ -112,12 +112,7 @@ async function exportarPDF({ titulo, colunas, linhas, nomeArquivo }) {
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(120, 120, 120);
-  const agora = new Date();
-  doc.text(
-    `Gerado em: ${agora.toLocaleDateString("pt-BR")}`,
-    14,
-    23
-  );
+  doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")}`, 14, 23);
 
   doc.setDrawColor(220, 38, 38);
   doc.setLineWidth(0.5);
@@ -147,13 +142,10 @@ function QRCodeMembros({ tipo, membros }) {
   const [aberto, setAberto] = useState(false);
   const abaAtual = ABAS.find((a) => a.id === tipo);
 
-  const payload = JSON.stringify(
-    membros.map(({ nome, cpf, naturalidade, dataNascimento, cargo }) => ({
-      nome, cpf, naturalidade, dataNascimento, cargo, categoria: abaAtual?.label,
-    }))
-  );
+  // URL que leva o usuário direto para a aba correta ao escanear
+  const abaUrl = `${window.location.origin}${window.location.pathname}?aba=${tipo}`;
 
-  const baixar = () => {
+  const baixarSVG = () => {
     const svg = document.querySelector(`#qr-${tipo} svg`);
     if (!svg) return;
     const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
@@ -180,9 +172,13 @@ function QRCodeMembros({ tipo, membros }) {
               <p style={{ fontSize: 13, marginBottom: 8 }}>
                 {membros.length} membro(s) de {abaAtual?.label}
               </p>
-              <QRCode value={payload} size={180} />
-              <button className="btn-secundario" onClick={baixar} style={{ marginTop: 8 }}>
-                <FaDownload /> Baixar QR code
+              {/* QR Code aponta para a aba correta */}
+              <QRCode value={abaUrl} size={180} />
+              <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 6 }}>
+                📱 Escaneie para ver os membros de {abaAtual?.label}
+              </p>
+              <button className="btn-secundario" onClick={baixarSVG} style={{ marginTop: 8 }}>
+                <FaDownload /> Baixar QR Code
               </button>
             </>
           )}
@@ -238,7 +234,6 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
 
       const salvo = await res.json();
 
-      // Apenas data, sem horário
       const dataFormatada = salvo.createdAt
         ? formatarData(salvo.createdAt)
         : formatarData(new Date());
@@ -296,7 +291,6 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
         )}
 
         <form onSubmit={handleSubmit} className="form-padrao">
-
           {/* FOTO */}
           <div className="form-group" style={{ alignItems: "center" }}>
             <label className="form-label">Foto</label>
@@ -594,6 +588,16 @@ export default function CadastroMembros() {
     homens:   [],
   });
 
+  // ✅ Lê o parâmetro ?aba= da URL ao escanear o QR Code
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const abaParam = params.get("aba");
+    if (abaParam && ABAS.find((a) => a.id === abaParam)) {
+      setAba(abaParam);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
   const carregarMembros = useCallback(async (tipo) => {
     setLoadingLista(true);
     try {
@@ -603,9 +607,7 @@ export default function CadastroMembros() {
 
       const normalizado = data.map((m) => ({
         ...m,
-        data: m.createdAt
-          ? formatarData(m.createdAt)
-          : m.data || "—",
+        data: m.createdAt ? formatarData(m.createdAt) : m.data || "—",
       }));
 
       setTodos((prev) => ({ ...prev, [tipo]: normalizado }));
@@ -627,9 +629,7 @@ export default function CadastroMembros() {
             .then((data) =>
               data.map((m) => ({
                 ...m,
-                data: m.createdAt
-                  ? formatarData(m.createdAt)
-                  : m.data || "—",
+                data: m.createdAt ? formatarData(m.createdAt) : m.data || "—",
               }))
             )
         )
