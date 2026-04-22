@@ -240,9 +240,6 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
         ? formatarData(salvo.createdAt)
         : formatarData(new Date());
 
-      //  CORRIGIDO: onCadastrar recebia (tipo, m) no pai mas era chamado
-      // aqui como onCadastrar(m) — agora passa apenas o membro,
-      // e o pai já conhece o tipo via closure (handleCadastrar usa aba)
       onCadastrar({ ...salvo, data: dataFormatada });
       setMsg({ texto: `${abaAtual.singular} cadastrado(a) com sucesso!`, erro: false });
     } catch (err) {
@@ -593,13 +590,22 @@ export default function CadastroMembros() {
     homens:   [],
   });
 
-  //  Lê o parâmetro ?aba= da URL ao escanear o QR Code
+  // ✅ ATUALIZADO: lê o ?aba= da URL ao escanear o QR Code
+  // e salva no localStorage como fallback para caso passe pelo login
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const abaParam = params.get("aba");
     if (abaParam && ABAS.find((a) => a.id === abaParam)) {
       setAba(abaParam);
+      localStorage.setItem("redirecionarAba", abaParam);
       window.history.replaceState({}, "", window.location.pathname);
+    } else {
+      // Recupera a aba salva caso tenha passado pelo login
+      const abaSalva = localStorage.getItem("redirecionarAba");
+      if (abaSalva && ABAS.find((a) => a.id === abaSalva)) {
+        setAba(abaSalva);
+        localStorage.removeItem("redirecionarAba");
+      }
     }
   }, []);
 
@@ -660,8 +666,6 @@ export default function CadastroMembros() {
     }
   }, [aba, carregarMembros, carregarTodos]);
 
-  //  CORRIGIDO: a função recebia (tipo, m) mas FormularioComLista
-  // chamava onCadastrar(m) sem o tipo — agora o tipo vem da aba ativa (closure)
   const handleCadastrar = useCallback((membroSalvo) => {
     setTodos((prev) => ({
       ...prev,

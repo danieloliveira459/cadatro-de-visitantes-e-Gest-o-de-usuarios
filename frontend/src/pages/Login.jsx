@@ -118,7 +118,14 @@ export default function Login() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("usuarioLogado", JSON.stringify(data.usuario));
 
-      navigate("/home", { replace: true });
+      // ✅ ADICIONADO: redireciona para a aba do QR Code se houver uma salva
+      const abaSalva = localStorage.getItem("redirecionarAba");
+      if (abaSalva) {
+        localStorage.removeItem("redirecionarAba");
+        navigate(`/membros?aba=${abaSalva}`, { replace: true });
+      } else {
+        navigate("/home", { replace: true });
+      }
     } catch (err) {
       if (err.name === "AbortError") {
         setErro("Servidor demorou para responder.");
