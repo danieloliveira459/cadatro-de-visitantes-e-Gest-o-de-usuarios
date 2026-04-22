@@ -10,11 +10,10 @@ import avisoRoutes from "./routes/avisoRoutes.js";
 import programacaoRoutes from "./routes/programacaoRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
-// ROTAS MEMBROS (PADRONIZADO)
 import cadastroGeralRoutes from "./routes/cadastroGeralRoutes.js";
 import criancasRoutes from "./routes/criancasRoutes.js";
-import jovensRoutes from "./routes/jovensRoutes.js"; 
-import mulheresRoutes from "./routes/mulheresRoutes.js"
+import jovensRoutes from "./routes/jovensRoutes.js";
+import mulheresRoutes from "./routes/mulheresRoutes.js";
 import homensRoutes from "./routes/homensRoutes.js";
 
 const app = express();
@@ -46,38 +45,50 @@ app.use("/api/avisos", avisoRoutes);
 app.use("/api/programacoes", programacaoRoutes);
 app.use("/api/auth", authRoutes);
 
-/* ================= ROTAS MEMBROS ================= */
-
 app.use("/api/cadastro-geral", cadastroGeralRoutes);
 app.use("/api/criancas", criancasRoutes);
-app.use("/api/jovens", jovensRoutes); // corrigido
+app.use("/api/jovens", jovensRoutes);
 app.use("/api/mulheres", mulheresRoutes);
 app.use("/api/homens", homensRoutes);
-
-/* ================= TESTE API ================= */
 
 app.get("/api", (req, res) => {
   res.json({ message: "API rodando com sucesso!" });
 });
 
-/* ================= FRONTEND ================= */
+/* ================= FRONTEND (SPA) ================= */
 
 const frontendPath = path.join(__dirname, "../frontend/dist");
 
+// ✅ CORRIGIDO: antes o bloco inteiro ficava dentro do if(fs.existsSync),
+// então se o dist não existisse, NENHUM fallback era registrado e
+// qualquer rota como /membros retornava 404.
+// Agora servimos o static só se existir, mas o fallback SPA é SEMPRE registrado.
+
 if (fs.existsSync(frontendPath)) {
   app.use(express.static(frontendPath));
-
-  app.get("*", (req, res) => {
-    if (req.path.startsWith("/api")) {
-      return res.status(404).json({ message: "Rota não encontrada" });
-    }
-    res.sendFile(path.join(frontendPath, "index.html"));
-  });
+  console.log("✅ Servindo frontend estático de:", frontendPath);
+} else {
+  console.warn("⚠️  frontend/dist não encontrado. Rode 'npm run build' no frontend.");
 }
-/* ================= 404 API ================= */
 
-app.use("/api", (req, res) => {
-  res.status(404).json({ message: "Rota da API não encontrada" });
+// ✅ Fallback SPA: qualquer rota que não seja /api devolve o index.html
+// Isso permite que o React Router gerencie /membros, /pastor, etc.
+app.get("*", (req, res) => {
+  if (req.path.startsWith("/api")) {
+    return res.status(404).json({ message: "Rota da API não encontrada" });
+  }
+
+  const indexPath = path.join(frontendPath, "index.html");
+
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+
+  // Se não tiver o build ainda, retorna mensagem clara
+  return res.status(200).send(`
+    <h2>Frontend não encontrado</h2>
+    <p>Execute <code>npm run build</code> na pasta frontend e faça o deploy novamente.</p>
+  `);
 });
 
 /* ================= SERVER ================= */
@@ -87,4 +98,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
-//

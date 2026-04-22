@@ -240,7 +240,7 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
         ? formatarData(salvo.createdAt)
         : formatarData(new Date());
 
-      // ✅ CORRIGIDO: onCadastrar recebia (tipo, m) no pai mas era chamado
+      //  CORRIGIDO: onCadastrar recebia (tipo, m) no pai mas era chamado
       // aqui como onCadastrar(m) — agora passa apenas o membro,
       // e o pai já conhece o tipo via closure (handleCadastrar usa aba)
       onCadastrar({ ...salvo, data: dataFormatada });
