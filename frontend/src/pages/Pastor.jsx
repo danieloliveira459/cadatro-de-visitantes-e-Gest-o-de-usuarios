@@ -1,7 +1,7 @@
 import Header from "../components/Header";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaArrowLeft, FaUsers, FaTrash, FaFilePdf, FaCalendarAlt, FaUserSlash } from "react-icons/fa";
+import { FaArrowLeft, FaUsers, FaTrash, FaFilePdf, FaCalendarAlt, FaUserSlash, FaWhatsapp } from "react-icons/fa";
 import { MdWarning } from "react-icons/md";
 import { PiUserSwitchLight } from "react-icons/pi";
 import jsPDF from "jspdf";
@@ -33,6 +33,9 @@ export default function Pastor() {
   const [telefone, setTelefone] = useState("");
   const [endereco, setEndereco] = useState("");
   const [observacoes, setObservacoes] = useState("");
+
+  // Estado para modal de WhatsApp personalizado
+  const [modalWpp, setModalWpp] = useState({ aberto: false, telefone: "", nome: "", mensagem: "" });
 
   useEffect(() => {
     carregarTudo();
@@ -67,6 +70,84 @@ export default function Pastor() {
     } catch (err) {
       console.log("Erro ao carregar dados:", err);
     }
+  };
+  // WHATSAPP
+  /**
+   * Abre o WhatsApp diretamente com uma mensagem padrão.
+   * @param {string} telefone  - número salvo no banco
+   * @param {string} nome      - nome do visitante/pessoa
+   * @param {boolean} aceitouJesus - true/false (null tratado como false)
+   */
+  const enviarWhatsApp = (telefone, nome, aceitouJesus = false) => {
+    if (!telefone) {
+      alert("Este visitante não possui telefone cadastrado.");
+      return;
+    }
+
+    // Remove tudo que não for dígito e adiciona DDI 55 (Brasil)
+    const numero = telefone.replace(/\D/g, "");
+    const numeroFormatado = numero.startsWith("55") ? numero : `55${numero}`;
+
+    const mensagem = aceitouJesus
+      ? `Olá ${nome}!  Que alegria saber que você aceitou Jesus! Nossa igreja está de portas abertas para você. Deus abençoe!`
+      : `Olá ${nome}!  Foi um prazer ter você conosco em nosso culto. Esperamos te ver novamente em breve. Deus abençoe!`;
+
+    const url = `https://wa.me/${numeroFormatado}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, "_blank");
+  };
+
+  /**
+   * Abre modal para o pastor personalizar a mensagem antes de enviar.
+   */
+  const abrirModalWhatsApp = (telefone, nome, aceitouJesus = false) => {
+    if (!telefone) {
+      alert("Este visitante não possui telefone cadastrado.");
+      return;
+    }
+
+    const mensagemPadrao = aceitouJesus
+      ? `Olá ${nome}!  Que alegria saber que você aceitou Jesus! Nossa igreja está de portas abertas para você. Deus abençoe!`
+      : `Olá ${nome}!  Foi um prazer ter você conosco em nosso culto. Esperamos te ver novamente em breve. Deus abençoe!`;
+
+    setModalWpp({ aberto: true, telefone, nome, mensagem: mensagemPadrao });
+  };
+
+  const confirmarEnvioWhatsApp = () => {
+    const numero = modalWpp.telefone.replace(/\D/g, "");
+    const numeroFormatado = numero.startsWith("55") ? numero : `55${numero}`;
+    const url = `https://wa.me/${numeroFormatado}?text=${encodeURIComponent(modalWpp.mensagem)}`;
+    window.open(url, "_blank");
+    setModalWpp({ aberto: false, telefone: "", nome: "", mensagem: "" });
+  };
+
+  /**
+   * Envia mensagem para TODOS os visitantes que não aceitaram Jesus de uma vez.
+   * Abre uma aba do WhatsApp por pessoa (o navegador pode bloquear pop-ups).
+   */
+  const enviarParaTodosNaoAceitaram = () => {
+    const naoAceitaram = visitantes.filter(
+      (v) => v.aceitou_jesus == 0 || v.aceitou_jesus === null
+    );
+
+    if (naoAceitaram.length === 0) {
+      alert("Todos os visitantes já aceitaram Jesus! 🎉");
+      return;
+    }
+
+    const confirmar = window.confirm(
+      `Deseja enviar mensagem pelo WhatsApp para ${naoAceitaram.length} visitante(s) que ainda não aceitaram Jesus?\n\n⚠️ O navegador pode abrir várias abas. Certifique-se de que pop-ups estão permitidos.`
+    );
+    if (!confirmar) return;
+
+    naoAceitaram.forEach((v, i) => {
+      setTimeout(() => {
+        if (!v.telefone) return;
+        const numero = v.telefone.replace(/\D/g, "");
+        const numeroFormatado = numero.startsWith("55") ? numero : `55${numero}`;
+        const mensagem = `Olá ${v.nome}!  Sentimos sua falta! Foi um prazer ter você conosco. Gostaríamos de te convidar de volta para nossos cultos. Deus abençoe!`;
+        window.open(`https://wa.me/${numeroFormatado}?text=${encodeURIComponent(mensagem)}`, "_blank");
+      }, i * 800); // pequeno delay entre cada abertura
+    });
   };
 
   // VISITANTES
@@ -103,7 +184,6 @@ export default function Pastor() {
       console.log("Erro ao deletar visitante:", err);
     }
   };
-
   // AVISOS
   const adicionarAviso = async () => {
     if (!titulo || !descricao) return alert("Preencha os campos!");
@@ -130,7 +210,6 @@ export default function Pastor() {
       console.log("Erro ao deletar aviso:", err);
     }
   };
-
   // PROGRAMAÇÃO
   const adicionarProgramacao = async () => {
     if (!dia || !horarioInicio || !horarioFim || !atividade) return;
@@ -165,9 +244,7 @@ export default function Pastor() {
     } catch (err) {
       console.log("Erro ao deletar programação:", err);
     }
-  };
-
-  // ACEITARAM JESUS
+  }; // ACEITARAM JESUS
   const adicionarAceitouJesus = async () => {
     if (!nome) return alert("Nome obrigatório!");
 
@@ -229,8 +306,7 @@ export default function Pastor() {
       console.error("Erro ao atualizar:", error);
     }
   };
-
-  // Helper para formatar apenas a data (dd/mm/aaaa)
+  // HELPERS
   const formatarData = (data) => {
     if (!data) return "-";
     return new Date(data).toLocaleDateString("pt-BR", {
@@ -240,8 +316,7 @@ export default function Pastor() {
       year: "numeric",
     });
   };
-
- // PDF
+  // PDF
   const gerarPDF = (tipo) => {
     const doc = new jsPDF();
 
@@ -338,9 +413,65 @@ export default function Pastor() {
 
     doc.save(`${nomes[tipo] || tipo}.pdf`);
   };
+  // RENDER
   return (
     <>
       <Header />
+
+      {/* ── Modal WhatsApp personalizado ── */}
+      {modalWpp.aberto && (
+        <div
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)",
+            zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              background: "#fff", borderRadius: 12, padding: 28, width: "90%",
+              maxWidth: 480, boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+            }}
+          >
+            <h3 style={{ marginBottom: 8, color: "#222", display: "flex", alignItems: "center", gap: 8 }}>
+              <FaWhatsapp color="#25D366" /> Enviar WhatsApp para {modalWpp.nome}
+            </h3>
+            <p style={{ fontSize: 13, color: "#666", marginBottom: 12 }}>
+              Edite a mensagem antes de enviar:
+            </p>
+            <textarea
+              value={modalWpp.mensagem}
+              onChange={(e) => setModalWpp((prev) => ({ ...prev, mensagem: e.target.value }))}
+              rows={5}
+              style={{
+                width: "100%", padding: "10px 12px", borderRadius: 8,
+                border: "1.5px solid #ddd", fontSize: 14, resize: "vertical",
+                fontFamily: "inherit", boxSizing: "border-box",
+              }}
+            />
+            <div style={{ display: "flex", gap: 10, marginTop: 16, justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setModalWpp({ aberto: false, telefone: "", nome: "", mensagem: "" })}
+                style={{
+                  padding: "9px 20px", borderRadius: 8, border: "1.5px solid #ddd",
+                  background: "#f5f5f5", cursor: "pointer", fontSize: 14,
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarEnvioWhatsApp}
+                style={{
+                  padding: "9px 20px", borderRadius: 8, border: "none",
+                  background: "#25D366", color: "#fff", cursor: "pointer",
+                  fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 6,
+                }}
+              >
+                <FaWhatsapp /> Abrir WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="pastor-container">
 
@@ -379,7 +510,7 @@ export default function Pastor() {
           </button>
         </div>
 
-        {/* VISITANTES */}
+        {/* ── VISITANTES ── */}
         {aba === "visitantes" && (
           <div className="painel">
             <div className="card">
@@ -417,7 +548,7 @@ export default function Pastor() {
                       <th>Função/ND</th>
                       <th>Telefone</th>
                       <th>Igreja</th>
-                      <th>Aceitou jesus?</th>
+                      <th>Aceitou Jesus?</th>
                       <th>Data</th>
                       <th>Ações</th>
                     </tr>
@@ -453,6 +584,16 @@ export default function Pastor() {
                         </td>
                         <td>{formatarData(v.data)}</td>
                         <td style={{ textAlign: "center" }}>
+                          {/* Botão WhatsApp individual com modal de edição */}
+                          <FaWhatsapp
+                            size={18}
+                            color="#25D366"
+                            style={{ cursor: "pointer", marginRight: 10 }}
+                            title="Enviar WhatsApp"
+                            onClick={() =>
+                              abrirModalWhatsApp(v.telefone, v.nome, v.aceitou_jesus == 1)
+                            }
+                          />
                           <FaTrash
                             className="delete"
                             onClick={() => handleDeleteVisitante(v.id)}
@@ -467,7 +608,7 @@ export default function Pastor() {
           </div>
         )}
 
-        {/* AVISOS */}
+        {/* ── AVISOS ── */}
         {aba === "avisos" && (
           <div className="avisos-grid">
             <div className="card">
@@ -527,7 +668,7 @@ export default function Pastor() {
           </div>
         )}
 
-        {/* PROGRAMAÇÃO */}
+        {/* ── PROGRAMAÇÃO ── */}
         {aba === "programacao" && (
           <div className="avisos-grid">
             <div className="card">
@@ -591,12 +732,12 @@ export default function Pastor() {
                   </tr>
                 </thead>
                 <tbody>
-                 {[...programacoes].sort((a, b) => {
-                const ordem = ["Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo"];
-                 const diaA = ordem.indexOf(a.dia);
-                   const diaB = ordem.indexOf(b.dia);
-                  if (diaA !== diaB) return diaA - diaB;
-                   return a.horario.localeCompare(b.horario);
+                  {[...programacoes].sort((a, b) => {
+                    const ordem = ["Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo"];
+                    const diaA = ordem.indexOf(a.dia);
+                    const diaB = ordem.indexOf(b.dia);
+                    if (diaA !== diaB) return diaA - diaB;
+                    return a.horario.localeCompare(b.horario);
                   }).map((p) => (
                     <tr key={p.id}>
                       <td>{p.dia}</td>
@@ -617,7 +758,7 @@ export default function Pastor() {
           </div>
         )}
 
-        {/* ACEITARAM JESUS */}
+        {/* ── ACEITARAM JESUS ── */}
         {aba === "aceitaramJesus" && (
           <div className="avisos-grid">
             <div className="card">
@@ -657,6 +798,14 @@ export default function Pastor() {
                       <td>{p.observacoes}</td>
                       <td>{formatarData(p.data)}</td>
                       <td style={{ textAlign: "center" }}>
+                        {/* Botão WhatsApp para quem aceitou Jesus */}
+                        <FaWhatsapp
+                          size={18}
+                          color="#25D366"
+                          style={{ cursor: "pointer", marginRight: 10 }}
+                          title="Enviar WhatsApp"
+                          onClick={() => abrirModalWhatsApp(p.telefone, p.nome, true)}
+                        />
                         <FaTrash
                           className="delete"
                           onClick={() => handleDeleteAceitouJesus(p.id)}

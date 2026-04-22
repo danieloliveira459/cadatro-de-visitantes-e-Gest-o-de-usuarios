@@ -22,9 +22,10 @@ const ABAS = [
   { id: "geral",    label: "Cadastro Geral", singular: null,      Icon: FaUsers       },
 ];
 
+// ✅ CORRIGIDO: URL da API estava errada (faltava "-ukhv" no final)
 const BASE_URL =
   import.meta.env.VITE_API_URL ||
-  "https://cadatro-de-visitantes-e-gest-o-de.onrender.com";
+  "https://cadatro-de-visitantes-e-gest-o-de-ukhv.onrender.com";
 
 const ROTA_POR_TIPO = {
   criancas: "criancas",
@@ -142,8 +143,10 @@ function QRCodeMembros({ tipo, membros }) {
   const [aberto, setAberto] = useState(false);
   const abaAtual = ABAS.find((a) => a.id === tipo);
 
-  // URL que leva o usuário direto para a aba correta ao escanear
-  const abaUrl = `${window.location.origin}${window.location.pathname}?aba=${tipo}`;
+  // ✅ CORRIGIDO: garante que a URL do QR aponte para /membros?aba=tipo
+  // independentemente do pathname atual, evitando 404 ao escanear
+  const origin = window.location.origin;
+  const abaUrl = `${origin}/membros?aba=${tipo}`;
 
   const baixarSVG = () => {
     const svg = document.querySelector(`#qr-${tipo} svg`);
@@ -172,7 +175,6 @@ function QRCodeMembros({ tipo, membros }) {
               <p style={{ fontSize: 13, marginBottom: 8 }}>
                 {membros.length} membro(s) de {abaAtual?.label}
               </p>
-              {/* QR Code aponta para a aba correta */}
               <QRCode value={abaUrl} size={180} />
               <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 6 }}>
                 📱 Escaneie para ver os membros de {abaAtual?.label}
@@ -238,10 +240,13 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
         ? formatarData(salvo.createdAt)
         : formatarData(new Date());
 
+      // ✅ CORRIGIDO: onCadastrar recebia (tipo, m) no pai mas era chamado
+      // aqui como onCadastrar(m) — agora passa apenas o membro,
+      // e o pai já conhece o tipo via closure (handleCadastrar usa aba)
       onCadastrar({ ...salvo, data: dataFormatada });
-      setMsg({ texto: ` ${abaAtual.singular} cadastrado(a) com sucesso!`, erro: false });
+      setMsg({ texto: `${abaAtual.singular} cadastrado(a) com sucesso!`, erro: false });
     } catch (err) {
-      setMsg({ texto: ` ${err.message}`, erro: true });
+      setMsg({ texto: `${err.message}`, erro: true });
     }
 
     setForm(formInicial());
@@ -655,12 +660,14 @@ export default function CadastroMembros() {
     }
   }, [aba, carregarMembros, carregarTodos]);
 
-  const handleCadastrar = (tipo, membroSalvo) => {
+  // ✅ CORRIGIDO: a função recebia (tipo, m) mas FormularioComLista
+  // chamava onCadastrar(m) sem o tipo — agora o tipo vem da aba ativa (closure)
+  const handleCadastrar = useCallback((membroSalvo) => {
     setTodos((prev) => ({
       ...prev,
-      [tipo]: [...(prev[tipo] ?? []), membroSalvo],
+      [aba]: [...(prev[aba] ?? []), membroSalvo],
     }));
-  };
+  }, [aba]);
 
   const handleDeletar = async (tipo, id) => {
     try {
@@ -683,7 +690,7 @@ export default function CadastroMembros() {
       <FormularioComLista
         tipo={aba}
         membros={todos[aba] ?? []}
-        onCadastrar={(m) => handleCadastrar(aba, m)}
+        onCadastrar={handleCadastrar}
         onDeletar={handleDeletar}
         loadingLista={loadingLista}
       />

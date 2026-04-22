@@ -14,19 +14,12 @@ function normalizarMembro(m) {
   }
 
   const { data_nascimento, created_at, ...resto } = m;
-
-  return {
-    ...resto,
-    dataNascimento,
-    createdAt,
-  };
+  return { ...resto, dataNascimento, createdAt };
 }
 
 export const listarJovens = async (req, res) => {
   try {
-    const [rows] = await db.query(
-      "SELECT * FROM jovens ORDER BY data_nascimento DESC"
-    );
+    const [rows] = await db.query("SELECT * FROM jovens ORDER BY data_nascimento DESC");
     return res.status(200).json(rows.map(normalizarMembro));
   } catch (err) {
     console.error("ERRO LISTAR:", err);
@@ -57,7 +50,6 @@ export const criarJovem = async (req, res) => {
 
     const [rows] = await db.query("SELECT * FROM jovens WHERE id = ?", [result.insertId]);
     return res.status(201).json(normalizarMembro(rows[0]));
-
   } catch (err) {
     console.error("ERRO CRIAR:", err);
     return res.status(500).json({ error: "Erro ao cadastrar" });
@@ -68,18 +60,14 @@ export const deletarJovem = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return res.status(400).json({ error: "ID é obrigatório" });
-    }
+    if (!id) return res.status(400).json({ error: "ID é obrigatório" });
 
     const [result] = await db.query("DELETE FROM jovens WHERE id = ?", [id]);
 
-    if (result.affectedRows === 0) {
+    if (result.affectedRows === 0)
       return res.status(404).json({ error: "Registro não encontrado" });
-    }
 
     return res.status(200).json({ msg: "Excluído com sucesso" });
-
   } catch (err) {
     console.error("ERRO DELETAR:", err);
     return res.status(500).json({ error: "Erro ao deletar" });
