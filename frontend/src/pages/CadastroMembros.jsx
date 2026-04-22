@@ -25,7 +25,7 @@ const ABAS = [
 // ✅ CORRIGIDO: URL da API estava errada (faltava "-ukhv" no final)
 const BASE_URL =
   import.meta.env.VITE_API_URL ||
-  "https://cadatro-de-visitantes-e-gest-o-de-ukhv.onrender.com";
+  "https://cadatro-de-visitantes-e-gest-o-de-ukhv.onrender.com/membros";
 
 const ROTA_POR_TIPO = {
   criancas: "criancas",
