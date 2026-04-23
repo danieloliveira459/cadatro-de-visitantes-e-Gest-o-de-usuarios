@@ -6,39 +6,36 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   const token = localStorage.getItem("token");
   let usuario = null;
 
-  //  Proteção contra JSON inválido
   try {
     const data = localStorage.getItem("usuarioLogado");
-
     if (data && data !== "undefined" && data !== "null") {
       usuario = JSON.parse(data);
     }
-  } catch (error) {
-    console.warn("Erro ao ler usuário do localStorage");
+  } catch {
     usuario = null;
   }
 
-  //  NÃO LOGADO → LOGIN (COM CONTROLE DE LOGOUT)
+  // NÃO LOGADO → LOGIN
   if (!token || !usuario) {
     return (
       <Navigate
         to="/login"
         replace
-        state={{
-          from: location,
-          logout: true, // 🔥 ESSENCIAL PRA NÃO DAR LOOP
-        }}
+        state={{ from: location, logout: true }}
       />
     );
   }
 
-  //  VERIFICA PERMISSÃO
-  const nivel = usuario?.nivel?.toUpperCase();
+  // ✅ CORRIGIDO: compara sem forçar uppercase — normaliza os dois lados
+  const nivel = usuario?.nivel?.trim().toLowerCase();
 
-  if (allowedRoles && (!nivel || !allowedRoles.includes(nivel))) {
-    return <Navigate to="/home" replace />;
+  if (
+    allowedRoles &&
+    (!nivel || !allowedRoles.some((role) => role.trim().toLowerCase() === nivel))
+  ) {
+    // ✅ CORRIGIDO: usa a página /sem-acesso que já existe no App.jsx
+    return <Navigate to="/sem-acesso" replace />;
   }
 
-  //  LIBERADO
   return children;
 }
