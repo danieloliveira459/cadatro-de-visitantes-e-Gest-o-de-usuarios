@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"; 
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
@@ -8,16 +8,15 @@ import Pastor from "./pages/Pastor";
 import Admin from "./pages/Admin";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import AceitaramJesus from "./pages/AceitaramJesus";
-import ResetPassword from "./pages/ResetPassword"; 
+import ResetPassword from "./pages/ResetPassword";
 import Membros from "./pages/CadastroMembros";
 import Qrcode from "./pages/QrExport";
+import SemAcesso from "./pages/SemAcesso"; // ← NOVO
 
 // FUNÇÃO SEGURA
 function getUsuario() {
   const data = localStorage.getItem("usuarioLogado");
-
   if (!data || data === "undefined") return null;
-
   try {
     return JSON.parse(data);
   } catch {
@@ -28,12 +27,10 @@ function getUsuario() {
 export default function App() {
   const [usuario, setUsuario] = useState(getUsuario());
 
-  // Atualiza se localStorage mudar (login/logout)
   useEffect(() => {
     const handleStorage = () => {
       setUsuario(getUsuario());
     };
-
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
@@ -57,6 +54,9 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/reset" element={<ResetPassword />} />
 
+        {/* PÁGINA DE ACESSO NEGADO */}
+        <Route path="/sem-acesso" element={<SemAcesso />} />
+
         {/* ADMIN */}
         <Route
           path="/admin"
@@ -67,51 +67,93 @@ export default function App() {
           }
         />
 
-        {/*HOME */}
+        {/* HOME — todos os logados */}
         <Route
           path="/home"
           element={
-            <ProtectedRoute allowedRoles={["ADM","PASTOR","VICE","DIRIGENTE","ATENDENTE","USER"]}>
+            <ProtectedRoute allowedRoles={[
+              "ADM",
+              "PASTOR",
+              "VICE PASTOR",
+              "PASTOR DIRIGENTE",
+              "SECRETÁRIO",
+              "TESOUREIRO",
+              "RECEPCIONISTA",
+              "Diácono",
+              "Diaconisa",
+            ]}>
               <Home />
             </ProtectedRoute>
           }
         />
 
-        {/*PASTOR */}
+        {/* PAINEL DO PASTOR */}
         <Route
           path="/pastor"
           element={
-            <ProtectedRoute allowedRoles={["ADM","PASTOR","VICE","DIRIGENTE"]}>
+            <ProtectedRoute allowedRoles={[
+              "ADM",
+              "PASTOR",
+              "VICE PASTOR",
+              "PASTOR DIRIGENTE",
+              "SECRETÁRIO",
+              "TESOUREIRO",
+            ]}>
               <Pastor />
             </ProtectedRoute>
           }
         />
 
-        {/*ACEITARAM JESUS */}
+        {/* CADASTRO DE VISITANTES / ACEITARAM JESUS */}
         <Route
           path="/aceitaram-jesus"
           element={
-            <ProtectedRoute allowedRoles={["ADM","PASTOR","VICE","DIRIGENTE","ATENDENTE","USER"]}>
+            <ProtectedRoute allowedRoles={[
+              "ADM",
+              "PASTOR",
+              "VICE PASTOR",
+              "PASTOR DIRIGENTE",
+              "SECRETÁRIO",
+              "TESOUREIRO",
+              "RECEPCIONISTA",
+              "Diácono",
+              "Diaconisa",
+            ]}>
               <AceitaramJesus />
             </ProtectedRoute>
           }
         />
 
-        {/*NOVA ROTA MEMBROS */}
+        {/* CADASTRO DE MEMBROS */}
         <Route
           path="/membros"
           element={
-            <ProtectedRoute allowedRoles={["ADM","PASTOR","VICE","DIRIGENTE","ATENDENTE"]}>
+            <ProtectedRoute allowedRoles={[
+              "ADM",
+              "PASTOR",
+              "VICE PASTOR",
+              "PASTOR DIRIGENTE",
+              "SECRETÁRIO",
+              "TESOUREIRO",
+            ]}>
               <Membros />
             </ProtectedRoute>
           }
         />
 
-        {/* Rota QR code */}
+        {/* QR CODE */}
         <Route
           path="/qrcode"
           element={
-            <ProtectedRoute allowedRoles={["ADM","PASTOR","VICE","DIRIGENTE","ATENDENTE"]}>
+            <ProtectedRoute allowedRdaoles={[
+              "ADM",
+              "PASTOR",
+              "VICE PASTOR",
+              "PASTOR DIRIGENTE",
+              "SECRETÁRIO",
+              "TESOUREIRO",
+              "RECEPCIONISTA",
+            ]}>
               <Qrcode />
             </ProtectedRoute>
           }
