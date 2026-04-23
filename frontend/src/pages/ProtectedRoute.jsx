@@ -6,35 +6,39 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   const token = localStorage.getItem("token");
   let usuario = null;
 
+  //  Proteção contra JSON inválido
   try {
     const data = localStorage.getItem("usuarioLogado");
+
     if (data && data !== "undefined" && data !== "null") {
       usuario = JSON.parse(data);
     }
-  } catch {
+  } catch (error) {
+    console.warn("Erro ao ler usuário do localStorage");
     usuario = null;
   }
 
-  // NÃO LOGADO → LOGIN
+  //  NÃO LOGADO → LOGIN (COM CONTROLE DE LOGOUT)
   if (!token || !usuario) {
     return (
       <Navigate
         to="/login"
         replace
-        state={{ from: location, logout: true }}
+        state={{
+          from: location,
+          logout: true, // 🔥 ESSENCIAL PRA NÃO DAR LOOP
+        }}
       />
     );
   }
 
-  // ✅ CORRIGIDO: compara sem forçar uppercase — normaliza os dois lados
-  const nivel = usuario?.nivel?.trim().toLowerCase();
+  //  VERIFICA PERMISSÃO
+  const nivel = usuario?.nivel?.toUpperCase();
 
-  if (
-    allowedRoles &&
-    (!nivel || !allowedRoles.some((role) => role.trim().toLowerCase() === nivel))
-  ) {
-      return <Navigate to="/login" replace />;
+  if (allowedRoles && (!nivel || !allowedRoles.includes(nivel))) {
+    return <Navigate to="/home" replace />;
   }
 
+  //  LIBERADO
   return children;
 }
