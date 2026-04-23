@@ -1,7 +1,7 @@
 import { db } from "../config/db.js";
 
 // ─── LISTAR ───────────────────────────────────────────────────────────────────
-export const listarProgramacao = async (req, res) => {
+export const listarProgramacoes = async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT
