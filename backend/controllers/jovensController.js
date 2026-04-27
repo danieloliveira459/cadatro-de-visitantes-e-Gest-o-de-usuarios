@@ -1,4 +1,5 @@
 import { db } from "../config/db.js";
+import { getSegundaFeira } from "../utils/semana.js";
 
 /* ── normaliza snake_case do MySQL → camelCase pro frontend ── */
 function normalizarMembro(m) {
@@ -12,7 +13,6 @@ function normalizarMembro(m) {
   let createdAt = m.created_at ?? m.createdAt ?? null;
   if (createdAt instanceof Date) createdAt = createdAt.toISOString();
 
-  /* foto: se vier como Buffer do MySQL, converte para base64 */
   let foto = m.foto ?? null;
   if (foto && Buffer.isBuffer(foto)) {
     const mime = m.foto_mime || "image/jpeg";
@@ -43,20 +43,22 @@ function normalizarMembro(m) {
   };
 }
 
-/* ── LISTAR ── */
+// ─── LISTAR — só da semana atual ─────────────────────────────────────────────
 export const listarJovens = async (req, res) => {
   try {
+    const semana = getSegundaFeira();
     const [rows] = await db.query(
-      "SELECT * FROM jovens ORDER BY created_at DESC"
+      "SELECT * FROM jovens WHERE semana = ? ORDER BY created_at DESC",
+      [semana]
     );
     return res.status(200).json(rows.map(normalizarMembro));
   } catch (err) {
-    console.error("ERRO LISTAR:", err);
+    console.error("ERRO LISTAR JOVENS:", err);
     return res.status(500).json({ error: "Erro ao listar registros" });
   }
 };
 
-/* ── CRIAR ── */
+// ─── CRIAR — salva com a semana atual ────────────────────────────────────────
 export const criarJovem = async (req, res) => {
   try {
     let {
@@ -80,19 +82,19 @@ export const criarJovem = async (req, res) => {
     }
 
     nome               = nome.trim();
-    cpf                = cpf      ? cpf.replace(/\D/g, "")           : null;
-    telefone           = telefone ? telefone.replace(/\D/g, "")      : null;
+    cpf                = cpf      ? cpf.replace(/\D/g, "")       : null;
+    telefone           = telefone ? telefone.replace(/\D/g, "")  : null;
     naturalidade       = naturalidade?.trim()       || null;
     nacionalidade      = nacionalidade?.trim()      || null;
     tituloEclesiastico = tituloEclesiastico?.trim() || null;
-    sexo               = sexo         || null;
-    estadoCivil        = estadoCivil  || null;
+    sexo               = sexo          || null;
+    estadoCivil        = estadoCivil   || null;
     grauInstrucao      = grauInstrucao || null;
-    fotoMime           = fotoMime     || null;
-    fotoNome           = fotoNome     || null;
+    fotoMime           = fotoMime      || null;
+    fotoNome           = fotoNome      || null;
     const data_nascimento = dataNascimento || null;
+    const semana          = getSegundaFeira();
 
-    /* converte base64 → Buffer para o LONGBLOB */
     let fotoBuffer = null;
     if (foto) {
       const match = foto.match(/^data:([^;]+);base64,(.+)$/);
@@ -108,26 +110,26 @@ export const criarJovem = async (req, res) => {
       `INSERT INTO jovens
          (nome, cpf, data_nascimento, sexo, titulo_eclesiastico,
           estado_civil, grau_instrucao, nacionalidade, naturalidade,
-          telefone, foto, foto_mime, foto_nome)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          telefone, foto, foto_mime, foto_nome, semana)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         nome, cpf, data_nascimento, sexo, tituloEclesiastico,
         estadoCivil, grauInstrucao, nacionalidade, naturalidade,
-        telefone, fotoBuffer, fotoMime, fotoNome,
+        telefone, fotoBuffer, fotoMime, fotoNome, semana,
       ]
     );
 
     const [rows] = await db.query("SELECT * FROM jovens WHERE id = ?", [result.insertId]);
     return res.status(201).json(normalizarMembro(rows[0]));
   } catch (err) {
-    console.error("ERRO CRIAR:", err);
+    console.error("ERRO CRIAR JOVEM:", err);
     if (err.code === "ER_DUP_ENTRY")
       return res.status(409).json({ error: "CPF já cadastrado." });
     return res.status(500).json({ error: "Erro ao cadastrar" });
   }
 };
 
-/* ── DELETAR ── */
+// ─── DELETAR ──────────────────────────────────────────────────────────────────
 export const deletarJovem = async (req, res) => {
   try {
     const { id } = req.params;
@@ -141,7 +143,7 @@ export const deletarJovem = async (req, res) => {
 
     return res.status(200).json({ msg: "Excluído com sucesso" });
   } catch (err) {
-    console.error("ERRO DELETAR:", err);
+    console.error("ERRO DELETAR JOVEM:", err);
     return res.status(500).json({ error: "Erro ao deletar" });
   }
 };

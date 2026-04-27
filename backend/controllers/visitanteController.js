@@ -1,7 +1,7 @@
 import { db } from "../config/db.js";
 import { getSegundaFeira } from "../utils/semana.js";
 
-// LISTAR — só da semana atual
+// ─── LISTAR — só da semana atual ─────────────────────────────────────────────
 export const listarVisitantes = async (req, res) => {
   try {
     const semana = getSegundaFeira();
@@ -16,7 +16,7 @@ export const listarVisitantes = async (req, res) => {
   }
 };
 
-// CRIAR — salva com a semana atual
+// ─── CRIAR — salva com a semana atual ────────────────────────────────────────
 export const criarVisitante = async (req, res) => {
   try {
     let { nome, funcao, telefone, igreja, aceitouJesus } = req.body;
@@ -25,14 +25,12 @@ export const criarVisitante = async (req, res) => {
       return res.status(400).json({ error: "Nome é obrigatório" });
     }
 
-    nome = nome.trim();
-    funcao = funcao?.trim() || null;
-    igreja = igreja?.trim() || null;
+    nome     = nome.trim();
+    funcao   = funcao?.trim()  || null;
+    igreja   = igreja?.trim()  || null;
     telefone = telefone ? telefone.replace(/\D/g, "") : null;
     const aceitou = aceitouJesus ? 1 : 0;
-    const semana = getSegundaFeira();
-
-    console.log("BODY TRATADO:", { nome, funcao, telefone, igreja, aceitou, semana });
+    const semana  = getSegundaFeira();
 
     const [result] = await db.query(
       `INSERT INTO visitantes (nome, funcao, telefone, igreja, aceitou_jesus, data, semana)
@@ -47,7 +45,7 @@ export const criarVisitante = async (req, res) => {
   }
 };
 
-// ATUALIZAR ACEITOU JESUS
+// ─── ATUALIZAR ACEITOU JESUS ──────────────────────────────────────────────────
 export const atualizarAceitou = async (req, res) => {
   try {
     const { id } = req.params;
@@ -72,7 +70,7 @@ export const atualizarAceitou = async (req, res) => {
   }
 };
 
-// DELETAR
+// ─── DELETAR ──────────────────────────────────────────────────────────────────
 export const deletarVisitante = async (req, res) => {
   try {
     const { id } = req.params;

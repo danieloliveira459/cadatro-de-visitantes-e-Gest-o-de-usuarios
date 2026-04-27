@@ -1,7 +1,7 @@
 import { db } from "../config/db.js";
 import { getSegundaFeira } from "../utils/semana.js";
 
-// LISTAR — só da semana atual
+// ─── LISTAR — só da semana atual ─────────────────────────────────────────────
 export const listarAceitaram = async (req, res) => {
   try {
     const semana = getSegundaFeira();
@@ -16,7 +16,7 @@ export const listarAceitaram = async (req, res) => {
   }
 };
 
-// CRIAR — salva com a semana atual
+// ─── CRIAR — salva com a semana atual ────────────────────────────────────────
 export const criarAceitou = async (req, res) => {
   try {
     let { nome, telefone, endereco, observacoes } = req.body;
@@ -25,13 +25,11 @@ export const criarAceitou = async (req, res) => {
       return res.status(400).json({ error: "Nome é obrigatório" });
     }
 
-    nome = nome.trim();
-    endereco = endereco?.trim() || null;
+    nome        = nome.trim();
+    endereco    = endereco?.trim()    || null;
     observacoes = observacoes?.trim() || null;
-    telefone = telefone ? telefone.replace(/\D/g, "") : null;
+    telefone    = telefone ? telefone.replace(/\D/g, "") : null;
     const semana = getSegundaFeira();
-
-    console.log("BODY TRATADO:", { nome, telefone, endereco, observacoes, semana });
 
     const [result] = await db.query(
       `INSERT INTO aceitaram_jesus (nome, telefone, endereco, observacoes, semana)
@@ -46,7 +44,7 @@ export const criarAceitou = async (req, res) => {
   }
 };
 
-// DELETAR
+// ─── DELETAR ──────────────────────────────────────────────────────────────────
 export const deletarAceitou = async (req, res) => {
   try {
     const { id } = req.params;

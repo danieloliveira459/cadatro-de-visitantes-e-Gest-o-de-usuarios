@@ -1,20 +1,17 @@
 import { db } from "../config/db.js";
+import { getSegundaFeira } from "../utils/semana.js";
 
-// ─── LISTAR ───────────────────────────────────────────────────────────────────
+// ─── LISTAR — só da semana atual ─────────────────────────────────────────────
 export const listarProgramacoes = async (req, res) => {
   try {
-    const [rows] = await db.query(`
-      SELECT
-        id,
-        dia,
-        horario,
-        atividade,
-        data,
-        dataAtividade
-      FROM programacao
-      ORDER BY id DESC
-    `);
-
+    const semana = getSegundaFeira();
+    const [rows] = await db.query(
+      `SELECT id, dia, horario, atividade, data, dataAtividade
+       FROM programacao
+       WHERE semana = ?
+       ORDER BY id DESC`,
+      [semana]
+    );
     return res.status(200).json(rows);
   } catch (err) {
     console.error("[PROGRAMACAO] Erro ao listar:", err);
@@ -22,7 +19,7 @@ export const listarProgramacoes = async (req, res) => {
   }
 };
 
-// ─── CRIAR ────────────────────────────────────────────────────────────────────
+// ─── CRIAR — salva com a semana atual ────────────────────────────────────────
 export const criarProgramacao = async (req, res) => {
   try {
     const { dia, horario, atividade, dataAtividade } = req.body ?? {};
@@ -33,13 +30,14 @@ export const criarProgramacao = async (req, res) => {
       });
     }
 
-    const dataCadastro = new Date().toISOString().slice(0, 19).replace("T", " ");
+    const dataCadastro          = new Date().toISOString().slice(0, 19).replace("T", " ");
     const dataAtividadeFormatada = dataAtividade?.trim() || null;
+    const semana                = getSegundaFeira();
 
     await db.query(
-      `INSERT INTO programacao (dia, horario, atividade, data, dataAtividade)
-       VALUES (?, ?, ?, ?, ?)`,
-      [dia.trim(), horario.trim(), atividade.trim(), dataCadastro, dataAtividadeFormatada]
+      `INSERT INTO programacao (dia, horario, atividade, data, dataAtividade, semana)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [dia.trim(), horario.trim(), atividade.trim(), dataCadastro, dataAtividadeFormatada, semana]
     );
 
     return res.status(201).json({ msg: "Programação criada com sucesso." });
@@ -90,10 +88,7 @@ export const deletarProgramacao = async (req, res) => {
       return res.status(400).json({ error: "ID é obrigatório." });
     }
 
-    const [result] = await db.query(
-      "DELETE FROM programacao WHERE id = ?",
-      [id]
-    );
+    const [result] = await db.query("DELETE FROM programacao WHERE id = ?", [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Programação não encontrada." });

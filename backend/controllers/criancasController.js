@@ -1,4 +1,5 @@
 import { db } from "../config/db.js";
+import { getSegundaFeira } from "../utils/semana.js";
 
 /* ── normaliza snake_case do MySQL → camelCase pro frontend ── */
 function normalizarMembro(m) {
@@ -43,11 +44,13 @@ function normalizarMembro(m) {
   };
 }
 
-/* ── LISTAR ── */
+// ─── LISTAR — só da semana atual ─────────────────────────────────────────────
 export const listarCriancas = async (req, res) => {
   try {
+    const semana = getSegundaFeira();
     const [rows] = await db.query(
-      "SELECT * FROM crianca ORDER BY created_at DESC"
+      "SELECT * FROM crianca WHERE semana = ? ORDER BY created_at DESC",
+      [semana]
     );
     return res.status(200).json(rows.map(normalizarMembro));
   } catch (err) {
@@ -56,7 +59,7 @@ export const listarCriancas = async (req, res) => {
   }
 };
 
-/* ── CRIAR ── */
+// ─── CRIAR — salva com a semana atual ────────────────────────────────────────
 export const criarCrianca = async (req, res) => {
   try {
     let {
@@ -80,17 +83,18 @@ export const criarCrianca = async (req, res) => {
     }
 
     nome               = nome.trim();
-    cpf                = cpf      ? cpf.replace(/\D/g, "")           : null;
-    telefone           = telefone ? telefone.replace(/\D/g, "")      : null;
+    cpf                = cpf      ? cpf.replace(/\D/g, "")       : null;
+    telefone           = telefone ? telefone.replace(/\D/g, "")  : null;
     naturalidade       = naturalidade?.trim()       || null;
     nacionalidade      = nacionalidade?.trim()      || null;
     tituloEclesiastico = tituloEclesiastico?.trim() || null;
-    sexo               = sexo         || null;
-    estadoCivil        = estadoCivil  || null;
+    sexo               = sexo          || null;
+    estadoCivil        = estadoCivil   || null;
     grauInstrucao      = grauInstrucao || null;
-    fotoMime           = fotoMime     || null;
-    fotoNome           = fotoNome     || null;
+    fotoMime           = fotoMime      || null;
+    fotoNome           = fotoNome      || null;
     const data_nascimento = dataNascimento || null;
+    const semana          = getSegundaFeira();
 
     /* converte base64 → Buffer para o LONGBLOB */
     let fotoBuffer = null;
@@ -108,12 +112,12 @@ export const criarCrianca = async (req, res) => {
       `INSERT INTO crianca
          (nome, cpf, data_nascimento, sexo, titulo_eclesiastico,
           estado_civil, grau_instrucao, nacionalidade, naturalidade,
-          telefone, foto, foto_mime, foto_nome)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          telefone, foto, foto_mime, foto_nome, semana)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         nome, cpf, data_nascimento, sexo, tituloEclesiastico,
         estadoCivil, grauInstrucao, nacionalidade, naturalidade,
-        telefone, fotoBuffer, fotoMime, fotoNome,
+        telefone, fotoBuffer, fotoMime, fotoNome, semana,
       ]
     );
 
@@ -127,7 +131,7 @@ export const criarCrianca = async (req, res) => {
   }
 };
 
-/* ── DELETAR ── */
+// ─── DELETAR ──────────────────────────────────────────────────────────────────
 export const deletarCrianca = async (req, res) => {
   try {
     const { id } = req.params;

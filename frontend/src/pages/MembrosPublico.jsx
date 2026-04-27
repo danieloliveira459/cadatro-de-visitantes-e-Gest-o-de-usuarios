@@ -175,7 +175,7 @@ export default function MembrosPublico({ abaInicial = "criancas" }) {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <FaUsers size={22} />
-          <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: 0.3 }}>Membros</span>
+          <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: 0.3 }}>Cadastro de Membros</span>
         </div>
         <button
           onClick={() => { setView(view === "form" ? "lista" : "form"); setErro(""); setSucesso(false); }}
@@ -497,11 +497,13 @@ function CardMembro({ m, index }) {
           gap: "8px 16px",
         }}>
           <DetalheItem label="CPF"               value={ocultarCPF(m.cpf)} />
-          <DetalheItem label="Nascimento"
+          <DetalheItem label="Data Nascimento"
             value={m.dataNascimento
               ? new Date(m.dataNascimento + "T00:00:00").toLocaleDateString("pt-BR")
               : "—"} />
           <DetalheItem label="Sexo"              value={m.sexo               || "—"} />
+          <DetalheItem label="Titulo Ecl."              value={m.titulo           || "—"} />
+          <DetalheItem label="Estado Civil"              value={m.estadoCivil             || "—"} />
           <DetalheItem label="Grau de Instrução" value={m.grauInstrucao      || "—"} />
           <DetalheItem label="Nacionalidade"     value={m.nacionalidade      || "—"} />
           <DetalheItem label="Naturalidade"      value={m.naturalidade       || "—"} />
