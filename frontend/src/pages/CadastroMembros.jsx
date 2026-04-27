@@ -103,7 +103,6 @@ function ocultarCPF(cpf) {
   if (!cpf) return "—";
   const d = cpf.replace(/\D/g, "");
   if (d.length < 11) return "—";
-  // Exibe: 123.***.***-45  (oculta apenas o meio)
   return `${d.slice(0, 3)}.***.***-${d.slice(9, 11)}`;
 }
 
@@ -137,7 +136,7 @@ function baixarFoto(base64, nomeArquivo) {
 
 /* ================= EXPORTAR PDF ================= */
 async function exportarPDF({ titulo, colunas, linhas, nomeArquivo }) {
-  const { default: jsPDF }    = await import("jspdf");
+  const { default: jsPDF }     = await import("jspdf");
   const { default: autoTable } = await import("jspdf-autotable");
 
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
@@ -180,8 +179,10 @@ function QRCodeMembros({ tipo, membros }) {
   const [aberto, setAberto] = useState(false);
   const abaAtual = ABAS.find((a) => a.id === tipo);
 
-  const origin  = window.location.origin;
-  const abaUrl  = `${origin}/membros?aba=${tipo}`;
+  const origin = window.location.origin;
+
+  // ✅ ALTERADO: aponta para rota pública — sem necessidade de login
+  const abaUrl = `${origin}/membros/publico?aba=${tipo}`;
 
   const baixarSVG = () => {
     const svg = document.querySelector(`#qr-${tipo} svg`);
@@ -212,7 +213,7 @@ function QRCodeMembros({ tipo, membros }) {
               </p>
               <QRCode value={abaUrl} size={180} />
               <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 6 }}>
-                📱 Escaneie para ver os membros de {abaAtual?.label}
+                📱 Escaneie para ver os membros de {abaAtual?.label} — sem precisar de login
               </p>
               <button className="btn-secundario" onClick={baixarSVG} style={{ marginTop: 8 }}>
                 <FaDownload /> Baixar QR Code
@@ -227,8 +228,6 @@ function QRCodeMembros({ tipo, membros }) {
 
 /* =================
    CAMPOS REUTILIZÁVEIS
-   ✅ Definidos FORA de FormularioComLista para evitar remontagem a cada render,
-      que causava perda de foco ao digitar letra por letra.
 ================= */
 function SelectField({ label, name, opcoes, form, onChange }) {
   return (

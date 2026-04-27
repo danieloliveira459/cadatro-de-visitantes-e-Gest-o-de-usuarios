@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"; 
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
@@ -8,16 +8,15 @@ import Pastor from "./pages/Pastor";
 import Admin from "./pages/Admin";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import AceitaramJesus from "./pages/AceitaramJesus";
-import ResetPassword from "./pages/ResetPassword"; 
+import ResetPassword from "./pages/ResetPassword";
 import Membros from "./pages/CadastroMembros";
 import Qrcode from "./pages/QrExport";
+import MembrosPublico from "./pages/MembrosPublico"; 
 
 // FUNÇÃO SEGURA
 function getUsuario() {
   const data = localStorage.getItem("usuarioLogado");
-
   if (!data || data === "undefined") return null;
-
   try {
     return JSON.parse(data);
   } catch {
@@ -33,7 +32,6 @@ export default function App() {
     const handleStorage = () => {
       setUsuario(getUsuario());
     };
-
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
@@ -57,6 +55,9 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/reset" element={<ResetPassword />} />
 
+        {/* ✅ ROTA PÚBLICA DO QR CODE — SEM LOGIN */}
+        <Route path="/membros/publico" element={<MembrosPublico />} />
+
         {/* ADMIN */}
         <Route
           path="/admin"
@@ -67,7 +68,7 @@ export default function App() {
           }
         />
 
-        {/*HOME */}
+        {/* HOME */}
         <Route
           path="/home"
           element={
@@ -77,7 +78,7 @@ export default function App() {
           }
         />
 
-        {/*PASTOR */}
+        {/* PASTOR */}
         <Route
           path="/pastor"
           element={
@@ -87,7 +88,7 @@ export default function App() {
           }
         />
 
-        {/*ACEITARAM JESUS */}
+        {/* ACEITARAM JESUS */}
         <Route
           path="/aceitaram-jesus"
           element={
@@ -97,7 +98,7 @@ export default function App() {
           }
         />
 
-        {/*NOVA ROTA MEMBROS */}
+        {/* MEMBROS (protegido) */}
         <Route
           path="/membros"
           element={
@@ -107,7 +108,7 @@ export default function App() {
           }
         />
 
-        {/* Rota QR code */}
+        {/* QR CODE (protegido) */}
         <Route
           path="/qrcode"
           element={
