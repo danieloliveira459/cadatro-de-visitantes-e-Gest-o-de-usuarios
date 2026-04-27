@@ -213,7 +213,7 @@ function QRCodeMembros({ tipo, membros }) {
               </p>
               <QRCode value={abaUrl} size={180} />
               <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 6 }}>
-                📱 Escaneie para ver os membros de {abaAtual?.label} — sem precisar de login
+                📱 Escaneie para ver os membros de {abaAtual?.label} 
               </p>
               <button className="btn-secundario" onClick={baixarSVG} style={{ marginTop: 8 }}>
                 <FaDownload /> Baixar QR Code

@@ -496,7 +496,6 @@ function CardMembro({ m, index }) {
           display: "grid", gridTemplateColumns: "1fr 1fr",
           gap: "8px 16px",
         }}>
-          <DetalheItem label="Nome"              value={m.nome            || "—"} />
           <DetalheItem label="CPF"               value={ocultarCPF(m.cpf)} />
           <DetalheItem label="Data Nascimento"
             value={m.dataNascimento
