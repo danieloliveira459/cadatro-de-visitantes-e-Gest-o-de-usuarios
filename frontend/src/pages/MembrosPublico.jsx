@@ -168,7 +168,7 @@ export default function MembrosPublico({ abaInicial = "criancas" }) {
       <div style={{
         background: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
         color: "#fff",
-        padding: "18px 20px",
+        padding: "1px 15px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
