@@ -16,7 +16,7 @@ export default function Header() {
 
   const isPastor = location.pathname === "/pastor";
   const isAceitaramJesus = location.pathname === "/aceitaram-jesus";
-  const isMembros = location.pathname === "/membros"; // 👈 nova rota
+  const isMembros = location.pathname === "/membros"; 
 
   let usuario = null;
   try {

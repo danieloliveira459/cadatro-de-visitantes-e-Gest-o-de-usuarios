@@ -9,6 +9,7 @@ import {
   FaTrash,
   FaFilePdf,
   FaCamera,
+  FaVideo,
 } from "react-icons/fa6";
 import { QRCode } from "react-qr-code";
 import "./CadastroMembros.css";
@@ -35,7 +36,6 @@ const ROTA_POR_TIPO = {
 
 const apiUrl = (tipo) => `${BASE_URL}/api/${ROTA_POR_TIPO[tipo]}`;
 
-/* ================= OPÇÕES DOS SELECTS ================= */
 const OPCOES_SEXO = ["Masculino", "Feminino", "Outro"];
 
 const OPCOES_ESTADO_CIVIL = [
@@ -59,7 +59,6 @@ const OPCOES_GRAU_INSTRUCAO = [
   "Doutorado",
 ];
 
-/* ================= FORM INICIAL ================= */
 const formInicial = () => ({
   nome:                "",
   cpf:                 "",
@@ -76,7 +75,6 @@ const formInicial = () => ({
   fotoNome:            "",
 });
 
-/* ================= MÁSCARA DE CPF ================= */
 function formatarCPF(valor) {
   return valor
     .replace(/\D/g, "")
@@ -86,7 +84,6 @@ function formatarCPF(valor) {
     .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 }
 
-/* ================= MÁSCARA DE TELEFONE ================= */
 function formatarTelefone(valor) {
   const digits = valor.replace(/\D/g, "").slice(0, 11);
   if (digits.length <= 10) {
@@ -106,7 +103,6 @@ function ocultarCPF(cpf) {
   return `${d.slice(0, 3)}.***.***-${d.slice(9, 11)}`;
 }
 
-/* ================= HELPER DE DATA ================= */
 function formatarData(data) {
   if (!data) return "—";
   return new Date(data).toLocaleDateString("pt-BR", {
@@ -117,7 +113,6 @@ function formatarData(data) {
   });
 }
 
-/* ================= LEITURA DE ARQUIVO COMO BASE64 ================= */
 function lerArquivoBase64(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -126,7 +121,6 @@ function lerArquivoBase64(file) {
   });
 }
 
-/* ================= DOWNLOAD DA FOTO ================= */
 function baixarFoto(base64, nomeArquivo) {
   const a = document.createElement("a");
   a.href = base64;
@@ -134,7 +128,6 @@ function baixarFoto(base64, nomeArquivo) {
   a.click();
 }
 
-/* ================= EXPORTAR PDF ================= */
 async function exportarPDF({ titulo, colunas, linhas, nomeArquivo }) {
   const { default: jsPDF }     = await import("jspdf");
   const { default: autoTable } = await import("jspdf-autotable");
@@ -174,15 +167,163 @@ async function exportarPDF({ titulo, colunas, linhas, nomeArquivo }) {
   doc.save(nomeArquivo);
 }
 
-/* ================= QR CODE DOS MEMBROS DA ABA ================= */
+/* ================= MODAL DE CÂMERA ================= */
+function CameraModal({ onCapturar, onFechar }) {
+  const videoRef  = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const [streamAtivo, setStreamAtivo] = useState(false);
+  const [erro, setErro]               = useState("");
+  const [facingMode, setFacingMode]   = useState("user");
+
+  const iniciarCamera = useCallback(async (modo) => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+    }
+    setStreamAtivo(false);
+    setErro("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: modo },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        setStreamAtivo(true);
+      }
+    } catch {
+      setErro("Câmera não disponível ou permissão negada.");
+    }
+  }, []);
+
+  useEffect(() => {
+    iniciarCamera(facingMode);
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, [facingMode, iniciarCamera]);
+
+  const alternarCamera = () => {
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+  };
+
+  const capturar = () => {
+    const video  = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    const base64 = canvas.toDataURL("image/jpeg", 0.85);
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    onCapturar(base64);
+  };
+
+  const fechar = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    onFechar();
+  };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0,
+      background: "rgba(0,0,0,0.80)",
+      zIndex: 9999,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 16,
+    }}>
+      <div style={{
+        background: "#fff", borderRadius: 16,
+        padding: 20, maxWidth: 440, width: "100%",
+        textAlign: "center", boxShadow: "0 8px 40px rgba(0,0,0,0.4)",
+      }}>
+        <h3 style={{ margin: "0 0 14px", fontSize: 17, color: "#111" }}>
+          📸 Tirar Foto
+        </h3>
+
+        {erro ? (
+          <div style={{
+            padding: "14px", background: "#fef2f2", border: "1px solid #fca5a5",
+            borderRadius: 10, color: "#dc2626", fontSize: 13, marginBottom: 16,
+          }}>
+            {erro}
+          </div>
+        ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            style={{
+              width: "100%", borderRadius: 12,
+              background: "#000", aspectRatio: "4/3",
+              objectFit: "cover",
+            }}
+          />
+        )}
+
+        <canvas ref={canvasRef} style={{ display: "none" }} />
+
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 14, flexWrap: "wrap" }}>
+          {streamAtivo && (
+            <>
+              <button
+                onClick={capturar}
+                style={{
+                  padding: "10px 22px",
+                  background: "linear-gradient(135deg, #dc2626, #b91c1c)",
+                  color: "#fff", border: "none", borderRadius: 9,
+                  fontWeight: 700, fontSize: 14, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 6,
+                }}
+              >
+                <FaCamera size={14} /> Capturar
+              </button>
+
+              <button
+                onClick={alternarCamera}
+                title="Alternar câmera frontal/traseira"
+                style={{
+                  padding: "10px 16px",
+                  background: "#f3f4f6", color: "#374151",
+                  border: "1px solid #e5e7eb", borderRadius: 9,
+                  fontWeight: 600, fontSize: 13, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 6,
+                }}
+              >
+                <FaVideo size={13} /> Alternar
+              </button>
+            </>
+          )}
+
+          <button
+            onClick={fechar}
+            style={{
+              padding: "10px 18px",
+              background: "#f3f4f6", color: "#374151",
+              border: "1px solid #e5e7eb", borderRadius: 9,
+              fontWeight: 600, fontSize: 13, cursor: "pointer",
+            }}
+          >
+            Cancelar
+          </button>
+        </div>
+
+        <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 10 }}>
+          Requer permissão de câmera no navegador
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ================= QR CODE ================= */
 function QRCodeMembros({ tipo, membros }) {
   const [aberto, setAberto] = useState(false);
   const abaAtual = ABAS.find((a) => a.id === tipo);
-
-  const origin = window.location.origin;
-
-  // ✅ USA ?qr=criancas na URL raiz — funciona sem rota nova no servidor
-  const abaUrl = `${origin}/?qr=${tipo}`;
+  const origin   = window.location.origin;
+  const abaUrl   = `${origin}/?qr=${tipo}`;
 
   const baixarSVG = () => {
     const svg = document.querySelector(`#qr-${tipo} svg`);
@@ -213,7 +354,7 @@ function QRCodeMembros({ tipo, membros }) {
               </p>
               <QRCode value={abaUrl} size={180} />
               <p style={{ fontSize: 11, color: "var(--color-text-secondary)", marginTop: 6 }}>
-                📱 Escaneie para ver os membros de {abaAtual?.label} 
+                📱 Escaneie para ver os membros de {abaAtual?.label}
               </p>
               <button className="btn-secundario" onClick={baixarSVG} style={{ marginTop: 8 }}>
                 <FaDownload /> Baixar QR Code
@@ -226,9 +367,7 @@ function QRCodeMembros({ tipo, membros }) {
   );
 }
 
-/* =================
-   CAMPOS REUTILIZÁVEIS
-================= */
+/* ================= CAMPOS REUTILIZÁVEIS ================= */
 function SelectField({ label, name, opcoes, form, onChange }) {
   return (
     <div className="form-group">
@@ -262,11 +401,12 @@ function InputField({ label, name, placeholder, type = "text", maxLength, requir
 
 /* ================= FORMULÁRIO + TABELA ================= */
 function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingLista }) {
-  const [form, setForm]             = useState(formInicial());
-  const [loading, setLoading]       = useState(false);
-  const [loadingPdf, setLoadingPdf] = useState(false);
-  const [msg, setMsg]               = useState({ texto: "", erro: false });
-  const fotoInputRef                = useRef(null);
+  const [form, setForm]               = useState(formInicial());
+  const [loading, setLoading]         = useState(false);
+  const [loadingPdf, setLoadingPdf]   = useState(false);
+  const [msg, setMsg]                 = useState({ texto: "", erro: false });
+  const [cameraAberta, setCameraAberta] = useState(false);
+  const fotoInputRef                  = useRef(null);
 
   const abaAtual = ABAS.find((a) => a.id === tipo);
 
@@ -293,6 +433,16 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
       fotoMime: file.type,
       fotoNome: file.name,
     }));
+  };
+
+  const handleFotoCamera = (base64) => {
+    setForm((prev) => ({
+      ...prev,
+      foto:     base64,
+      fotoMime: "image/jpeg",
+      fotoNome: `foto-camera-${Date.now()}.jpg`,
+    }));
+    setCameraAberta(false);
   };
 
   const handleSubmit = async (e) => {
@@ -363,6 +513,14 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
 
   return (
     <div className="two-col">
+      {/* Modal de câmera */}
+      {cameraAberta && (
+        <CameraModal
+          onCapturar={handleFotoCamera}
+          onFechar={() => setCameraAberta(false)}
+        />
+      )}
+
       {/* --- CARD FORMULÁRIO --- */}
       <div className="card-padrao">
         <h2 className="titulo-card">
@@ -418,13 +576,26 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
               />
 
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+                {/* Botão: selecionar arquivo */}
                 <button
                   type="button"
                   className="btn-secundario"
                   style={{ fontSize: 12, padding: "4px 12px" }}
                   onClick={() => fotoInputRef.current?.click()}
                 >
-                  {form.foto ? "Trocar foto" : "Selecionar foto"}
+                  <FaCamera style={{ marginRight: 4 }} />
+                  {form.foto ? "Trocar arquivo" : "Selecionar arquivo"}
+                </button>
+
+                {/* Botão: tirar foto pela câmera */}
+                <button
+                  type="button"
+                  className="btn-secundario"
+                  style={{ fontSize: 12, padding: "4px 12px", color: "#dc2626" }}
+                  onClick={() => setCameraAberta(true)}
+                >
+                  <FaVideo style={{ marginRight: 4 }} />
+                  Tirar foto
                 </button>
 
                 {form.foto && (
@@ -462,7 +633,7 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
             </div>
           </div>
 
-          {/* CAMPOS DO FORMULÁRIO */}
+          {/* CAMPOS */}
           <InputField
             label="Nome Completo"
             name="nome"
@@ -486,7 +657,6 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
             form={form}
             onChange={handleChange}
           />
-
           <SelectField
             label="Sexo"
             name="sexo"
@@ -494,7 +664,6 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
             form={form}
             onChange={handleChange}
           />
-
           <InputField
             label="Título Eclesiástico"
             name="tituloEclesiastico"
@@ -502,7 +671,6 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
             form={form}
             onChange={handleChange}
           />
-
           <SelectField
             label="Estado Civil"
             name="estadoCivil"
@@ -517,7 +685,6 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
             form={form}
             onChange={handleChange}
           />
-
           <InputField
             label="Nacionalidade"
             name="nacionalidade"
@@ -532,7 +699,6 @@ function FormularioComLista({ tipo, membros, onCadastrar, onDeletar, loadingList
             form={form}
             onChange={handleChange}
           />
-
           <InputField
             label="Número de Telefone"
             name="telefone"
