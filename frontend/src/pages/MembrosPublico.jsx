@@ -404,94 +404,31 @@ export default function MembrosPublico({ abaInicial = "criancas" }) {
         )}
 
         {/* ══════════════ LISTA ══════════════ */}
-{view === "lista" && (
-  <div style={{
-    background: "#fff", borderRadius: 14,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-    overflow: "hidden",
-  }}>
-    {/* Cabeçalho da Lista */}
-    <div style={{
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "14px 18px", borderBottom: "1px solid #fee2e2",
-    }}>
-      <span style={{ fontWeight: 700, fontSize: 15, color: "#dc2626", display: "flex", alignItems: "center", gap: 8 }}>
-        {IconeAba && <IconeAba size={16} />} {abaAtual?.label} Cadastrados
-      </span>
-      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-        <span style={{ background: "#f3f4f6", color: "#6b7280", borderRadius: 20, padding: "3px 14px", fontWeight: 700, fontSize: 13 }}>
-          Total: {membros.length}
-        </span>
-        <button style={{
-          display: "flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #dc2626",
-          color: "#dc2626", borderRadius: 8, padding: "5px 12px", cursor: "pointer", fontSize: 13, fontWeight: 700
-        }}>
-          <FaDownload size={12} /> GERAR PDF
-        </button>
-      </div>
-    </div>
+        {view === "lista" && (
+          <div style={{
+            background: "#fff", borderRadius: 14,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+            overflow: "hidden",
+          }}>
+            {/* topo da lista */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "14px 18px", borderBottom: "1px solid #fee2e2",
+              flexWrap: "wrap", gap: 8,
+            }}>
+              <span style={{ fontWeight: 700, fontSize: 15, color: "#dc2626",
+                display: "flex", alignItems: "center", gap: 8 }}>
+                {IconeAba && <IconeAba size={16} />} {abaAtual?.label}
+              </span>
+              <span style={{
+                background: "#fee2e2", color: "#dc2626",
+                borderRadius: 20, padding: "3px 14px",
+                fontWeight: 700, fontSize: 13,
+              }}>
+                Total: {membros.length}
+              </span>
+            </div>
 
-    {/* Tabela Responsiva */}
-    <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "13px" }}>
-        <thead>
-          <tr style={{ background: "#f9fafb", color: "#6b7280", borderBottom: "2px solid #eee" }}>
-            <th style={thStyle}>Foto</th>
-            <th style={thStyle}>Nome</th>
-            <th style={thStyle}>CPF</th>
-            <th style={thStyle}>Nascimento</th>
-            <th style={thStyle}>Sexo</th>
-            <th style={thStyle}>Título Ecl.</th>
-            <th style={thStyle}>Estado Civil</th>
-            <th style={thStyle}>Instrução</th>
-            <th style={thStyle}>Nacionalidade</th>
-            <th style={thStyle}>Naturalidade</th>
-            <th style={thStyle}>Telefone</th>
-            <th style={thStyle}>Cadastro</th>
-            <th style={thStyle}>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr><td colSpan="13" style={{ textAlign: "center", padding: "30px" }}>Carregando...</td></tr>
-          ) : membros.length === 0 ? (
-            <tr><td colSpan="13" style={{ textAlign: "center", padding: "30px" }}>Nenhum registro encontrado.</td></tr>
-          ) : (
-            membros.map((m, i) => (
-              <tr key={m._id || i} style={{ borderBottom: "1px solid #f3f4f6", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
-                <td style={tdStyle}>
-                  {m.foto ? (
-                    <img src={m.foto} style={{ width: 35, height: 35, borderRadius: "50%", objectFit: "cover" }} />
-                  ) : (
-                    <div style={{ width: 35, height: 35, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <FaCamera size={12} color="#ccc" />
-                    </div>
-                  )}
-                </td>
-                <td style={{ ...tdStyle, fontWeight: 700, color: "#111", maxWidth: "150px" }}>{m.nome}</td>
-                <td style={tdStyle}>{ocultarCPF(m.cpf)}</td>
-                <td style={tdStyle}>{m.dataNascimento ? new Date(m.dataNascimento + "T00:00:00").toLocaleDateString("pt-BR") : "—"}</td>
-                <td style={tdStyle}>{m.sexo || "—"}</td>
-                <td style={tdStyle}>{m.tituloEclesiastico || "—"}</td>
-                <td style={tdStyle}>{m.estadoCivil || "—"}</td>
-                <td style={tdStyle}>{m.grauInstrucao || "—"}</td>
-                <td style={tdStyle}>{m.nacionalidade || "—"}</td>
-                <td style={tdStyle}>{m.naturalidade || "—"}</td>
-                <td style={tdStyle}>{m.telefone || "—"}</td>
-                <td style={tdStyle}>{m.createdAt ? new Date(m.createdAt).toLocaleDateString("pt-BR") : "27/04/2026"}</td>
-                <td style={tdStyle}>
-                  <button style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af" }}>
-                    <FaTrash size={14} />
-                  </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  </div>
-)}
             {/* corpo */}
             {loading ? (
               <div style={{ padding: 50, textAlign: "center" }}>
